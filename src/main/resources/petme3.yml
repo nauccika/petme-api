@@ -256,6 +256,37 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /v1/reviews/count:
+    get:
+      summary: 누적리뷰 갯수
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - totalReviewCount
+                properties:
+                  totalReviewCount:
+                    $ref: '#/components/schemas/TotalReviewCount'
+  /v1/rankings:
+    get:
+      summary: 랭킹 검색(시.군.자치구 기준)
+      parameters:
+        - name: zipcode
+          in: query
+          required: true
+          description: 우편번호
+          schema:
+            $ref: '#/components/schemas/Zipcode'
+        - name: placeName
+          in: query
+          required: true
+          description: 장소명
+          schema:
+            $ref: '#/components/schemas/Name'
 
 components:
   securitySchemes:
@@ -345,3 +376,12 @@ components:
     Title:
       type: string
       description: 제목
+    TotalReviewCount:
+      type: integer
+      description: 전체리뷰갯수
+    Zipcode:
+      type: string
+      description: 우편번호
+    Name:
+      type: string
+      description: 장소이름

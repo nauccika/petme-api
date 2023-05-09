@@ -1,7 +1,6 @@
 SET
 foreign_key_checks = 0;
 
-
 DROP TABLE IF EXISTS `tb_place_business_hours`;
 CREATE TABLE `tb_place_business_hours`
 (
@@ -124,7 +123,7 @@ DROP TABLE IF EXISTS `tb_crawling_naver_map`;
 CREATE TABLE `tb_crawling_naver_map`
 (
     `id`                   bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '아이디',
-    `place_name`           varchar(1024)               NOT NULL COMMENT '장소이름',
+    `name`                 varchar(1024)               NOT NULL COMMENT '장소이름',
     `ranking`              varchar(10)   DEFAULT NULL COMMENT '랭킹(순위)',
     `blog_review_count`    int(11) unsigned DEFAULT '0' COMMENT '블로그 리뷰수',
     `visitor_review_count` int(11) unsigned DEFAULT '0' COMMENT '방문자 리뷰수',
@@ -149,7 +148,7 @@ CREATE TABLE `tb_crawling_naver_map`
     `modify_time`          datetime      DEFAULT now() NOT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '정보 수정일시',
     `register_time`        datetime      DEFAULT now() NOT NULL COMMENT '정보 등록일시',
     PRIMARY KEY (`id`),
-    KEY                    `idx_tb_crawling_naver_map_place_name` (`place_name`)
+    KEY                    `idx_tb_crawling_naver_map_name` (`name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 DEFAULT COLLATE=utf8mb4_general_ci COMMENT='네이버맵 정보 크롤링 테이블';
 
 DROP TABLE IF EXISTS `tb_crawling_dogpalza`;
@@ -195,7 +194,7 @@ DROP TABLE IF EXISTS `tb_place`;
 CREATE TABLE `tb_place`
 (
     `id`                   bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '아이디',
-    `place_name`           varchar(1024)               NOT NULL COMMENT '장소이름',
+    `name`                 varchar(1024)               NOT NULL COMMENT '장소이름',
     `ranking`              varchar(10)   DEFAULT NULL COMMENT '랭킹(순위)',
     `blog_review_count`    int(11) unsigned DEFAULT '0' COMMENT '블로그 리뷰수',
     `visitor_review_count` int(11) unsigned DEFAULT '0' COMMENT '방문자 리뷰수',
@@ -220,7 +219,7 @@ CREATE TABLE `tb_place`
     `modify_time`          datetime      DEFAULT now() NOT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '정보 수정일시',
     `register_time`        datetime      DEFAULT now() NOT NULL COMMENT '정보 등록일시',
     PRIMARY KEY (`id`),
-    KEY                    `idx_tb_place_place_name` (`place_name`)
+    KEY                    `idx_tb_place_name` (`name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 DEFAULT COLLATE=utf8mb4_general_ci COMMENT='장소 정보 테이블';
 
 DROP TABLE IF EXISTS `tb_pet_raboratory`;
@@ -330,6 +329,7 @@ CREATE TABLE `tb_admin_user`
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 DEFAULT COLLATE=utf8mb4_general_ci COMMENT='관리자정보';
 
 DROP TABLE IF EXISTS `tb_user`;
+DROP TABLE IF EXISTS `tb_user`;
 CREATE TABLE `tb_user`
 (
     `id`                           bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '아이디',
@@ -338,6 +338,8 @@ CREATE TABLE `tb_user`
     `password`                     varchar(64)   DEFAULT NULL COMMENT '로그인 패스워드',
     `email`                        varchar(512)  DEFAULT NULL COMMENT '사용자 이메일',
     `phone`                        varchar(20)   DEFAULT NULL COMMENT '전화번호',
+    `birthday`                     varchar(16)   DEFAULT NULL COMMENT '생일',
+    `age_range`                    varchar(16)   DEFAULT NULL COMMENT '연령대',
     `resident_registration_number` varchar(18)   DEFAULT NULL COMMENT '주민등록번호',
     `street_name_address`          varchar(1024) DEFAULT NULL COMMENT '도로명 주소',
     `lot_number_address`           varchar(1024) DEFAULT NULL COMMENT '지번 주소',
@@ -345,7 +347,7 @@ CREATE TABLE `tb_user`
     `receive_information_yn`       varchar(1)    DEFAULT "0" COMMENT '정보수신여부',
     `receive_event_yn`             varchar(1)    DEFAULT "0" COMMENT '이벤트수신여부',
     `access_token`                 varchar(4)    DEFAULT "0" COMMENT '2차 oAuth 엑세스 토큰',
-    `oauth_type`                   varchar(1)    DEFAULT "0" COMMENT '2차 인증 타입',
+    `oauth_type`                   varchar(16)   DEFAULT NULL COMMENT '2차 인증 타입',
     `pet_type`                     varchar(32)   DEFAULT NULL COMMENT '애완동물 타입',
     `current_point`                int(11) NOT NULL DEFAULT '0' COMMENT '현재 포인트',
     `last_login`                   datetime      DEFAULT NULL COMMENT '최근 로그인 시간',
