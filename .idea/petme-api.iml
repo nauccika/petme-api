@@ -19,6 +19,7 @@
         <setting name="provider-name" value="Hibernate" />
         <datasource-mapping>
           <factory-entry name="entityManagerFactory" />
+          <factory-entry name="petme-api" />
         </datasource-mapping>
         <naming-strategy-map />
       </configuration>
@@ -123,6 +124,8 @@
     <orderEntry type="library" name="Maven: org.mapstruct:mapstruct:1.5.3.Final" level="project" />
     <orderEntry type="library" name="Maven: org.projectlombok:lombok-mapstruct-binding:0.2.0" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Maven: org.mariadb.jdbc:mariadb-java-client:3.0.7" level="project" />
+    <orderEntry type="library" name="Maven: org.flywaydb:flyway-mysql:8.5.13" level="project" />
+    <orderEntry type="library" name="Maven: org.flywaydb:flyway-core:8.5.13" level="project" />
     <orderEntry type="library" name="Maven: org.springframework.boot:spring-boot-starter-test:2.7.10" level="project" />
     <orderEntry type="library" name="Maven: org.springframework.boot:spring-boot-test:2.7.10" level="project" />
     <orderEntry type="library" name="Maven: org.springframework.boot:spring-boot-test-autoconfigure:2.7.10" level="project" />

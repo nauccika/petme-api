@@ -1,0 +1,347 @@
+openapi: "3.0.2"
+info:
+  title: Petme3 API
+  version: "0.1"
+servers:
+  - url: https://api.server.test/v1
+paths:
+  /v1/terms:
+    get:
+      summary: 약관리스트
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - title
+                    - content
+                    - requiredYn
+                    - order
+                  properties:
+                    title:
+                      $ref: '#/components/schemas/Title'
+                    content:
+                      $ref: '#/components/schemas/Content'
+                    requiredYn:
+                      $ref: '#/components/schemas/RequiredYn'
+                    order:
+                      $ref: '#/components/schemas/Order'
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /v1/login:
+    post:
+      summary: 로그인
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - loginId
+                - password
+                - loginType
+              properties:
+                loginId:
+                  $ref: '#/components/schemas/LoginId'
+                password:
+                  $ref: '#/components/schemas/Password'
+                loginType:
+                  $ref: '#/components/schemas/LoginType'
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - token
+                properties:
+                  token:
+                    $ref: '#/components/schemas/Token'
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /v1/users:
+    get:
+      security:
+        - bearerAuth: []
+      summary: 내정보조회
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - userName
+                  - email
+                  - reviewCount
+                  - point
+                  - watchCount
+                properties:
+                  userName:
+                    $ref: '#/components/schemas/UserName'
+                  email:
+                    $ref: '#/components/schemas/Email'
+                  reviewCount:
+                    $ref: '#/components/schemas/ReviewCount'
+                  point:
+                    $ref: '#/components/schemas/Point'
+                  watchCount:
+                    $ref: '#/components/schemas/WatchCount'
+    post:
+      summary: 회원가입
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - loginId
+                - password
+                - passwordConfirm
+                - phone
+                - otp
+                - termsIds
+              properties:
+                loginId:
+                  $ref: '#/components/schemas/LoginId'
+                password:
+                  $ref: '#/components/schemas/Password'
+                passwordConfirm:
+                  $ref: '#/components/schemas/PasswordConfirm'
+                phone:
+                  $ref: '#/components/schemas/Phone'
+                otp:
+                  $ref: '#/components/schemas/Otp'
+                termsIds:
+                  type: array
+                  items:
+                    example: [1,2,3]
+                    $ref: '#/components/schemas/TermsId'
+      responses:
+        "201":
+          description: Created
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /v1/users/email:
+    post:
+      summary: 이메일 검증
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  $ref: '#/components/schemas/Email'
+      responses:
+        "200":
+          description: Ok
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      summary: 이메일 찾기
+      parameters:
+        - name: phone
+          in: query
+          required: true
+          description: 휴대폰번호
+          schema:
+            $ref: '#/components/schemas/Phone'
+        - name: otp
+          in: query
+          required: true
+          description: otp
+          schema:
+            $ref: '#/components/schemas/Otp'
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - email
+                properties:
+                  email:
+                    $ref: '#/components/schemas/Email'
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /v1/users/password:
+    get:
+      summary: 비밀번호 찾기
+      parameters:
+        - name: phone
+          in: query
+          required: true
+          description: 휴대폰번호
+          schema:
+            $ref: '#/components/schemas/Phone'
+        - name: otp
+          in: query
+          required: true
+          description: otp
+          schema:
+            $ref: '#/components/schemas/Otp'
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - userId
+                  - otp
+                properties:
+                  userId:
+                    $ref: '#/components/schemas/UserId'
+                  otp:
+                    $ref: '#/components/schemas/Otp'
+    put:
+      summary: 패스워드 변경
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - userId
+                - otp
+              properties:
+                userId:
+                  $ref: '#/components/schemas/UserId'
+                otp:
+                  $ref: '#/components/schemas/Otp'
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  securitySchemes:
+    bearerAuth: # arbitrary name for the security scheme
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Error:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          example: '인증 번호가 올바르지 않습니다'
+          description: 에러 메세지
+        cause:
+          type: string
+          description: 상세 메세지
+    LoginId:
+      type: string
+      example: 'petme@petme.kr'
+      description: 회원 아이디
+    Password:
+      type: string
+      example: '********'
+      description: 패스워드
+    PasswordConfirm:
+      type: string
+      example: '********'
+      description: 패스워드 확인
+    Otp:
+      type: string
+      example: '3454'
+      description: otp
+    LoginType:
+      type: string
+      description: 로그인타입
+      enum: [kakao, google, apple, email]
+    Phone:
+      type: string
+      example: '01033201234'
+      description: 휴대폰번호
+    Email:
+      type: string
+      example: 'petme@petme.kr'
+      description: 이메일
+    UserId:
+      type: integer
+      example: 10
+      description: 사용자id
+    Token:
+      type: string
+      description: jwt토큰
+    ReviewCount:
+      type: integer
+      example: 10
+      description: 리뷰갯수
+    Point:
+      type: integer
+      example: 2000
+      description: 포인트
+    WatchCount:
+      type: integer
+      example: 5
+      description: 찜갯수
+    UserName:
+      type: string
+      example: '홍길동'
+      description: 사용자명
+    Content:
+      type: string
+      description: 내용
+    RequiredYn:
+      type: string
+      example: 'y'
+      description: 필수여부
+    Order:
+      type: integer
+      example: 1
+      description: 정렬순서
+    TermsId:
+      type: integer
+      example: 3
+      description: 약관아이디
+    Title:
+      type: string
+      description: 제목

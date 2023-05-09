@@ -9,16 +9,11 @@ spring:
   config:
     activate:
       on-profile: local
-  sql:
-    init:
-      mode: always
-      schema-locations: classpath*:db/petme3-tables.sql
-      data-locations: classpath*:db/petme3-data.sql
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
-    url: jdbc:mariadb://localhost:3306/petme3
+    url: jdbc:mariadb://localhost:3306/petme
     username: petme_admin
-    password: dkshk@ghkswkd7
+    password: P@ssw0rd
   jpa:
     hibernate:
       ddl-auto: none
@@ -32,13 +27,8 @@ spring:
   config:
     activate:
       on-profile: docker
-  sql:
-    init:
-      mode: always
-      schema-locations: classpath*:db/petme3-tables.sql
-      data-locations: classpath*:db/petme3-data.sql
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
-    url: jdbc:mariadb://mariadb:3306/petme3
+    url: jdbc:mariadb://mariadb:3306/petme
     username: petme_admin
-    password: dkshk@ghkswkd7
+    password: P@ssw0rd
