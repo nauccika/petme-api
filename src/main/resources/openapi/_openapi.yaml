@@ -1,0 +1,44 @@
+openapi: "3.0.2"
+info:
+  title: Petme3 API
+  version: "0.1"
+servers:
+  - url: https://api.server.test/v1
+paths:
+  /v1/login:
+    $ref: './paths/v1_login.yaml'
+  /v1/emails:
+    $ref: './paths/v1_emails.yaml'
+  /v1/terms:
+    $ref: './paths/v1_terms.yaml'
+  /v1/opts:
+    $ref: './paths/v1_otps.yaml'
+  /v1/password:
+    $ref: './paths/v1_password.yaml'
+  /v1/users:
+    $ref: './paths/v1_users.yaml'
+  /v1/users/email:
+    $ref: './paths/v1_users_email.yaml'
+  /v1/users/password:
+    $ref: './paths/v1_users_password.yaml'
+  /v1/users/name:
+    $ref: './paths/v1_users_name.yaml'
+  /v1/users/phone:
+    $ref: './paths/v1_users_phone.yaml'
+  /v1/users/withdraw:
+    $ref: './paths/v1_users_withdraw.yaml'
+  /v1/users/reviews:
+    $ref: './paths/v1_users_reviews.yaml'
+  /v1/users/points:
+    $ref: './paths/v1_users_points.yaml'
+  /v1/users/watches:
+    $ref: './paths/v1_users_watches.yaml'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    $ref: './schemas/_index.yaml'

@@ -1,0 +1,23 @@
+put:
+  summary: 회원 탈퇴
+  description: >
+    회원 탈퇴
+  security:
+    - bearerAuth: [ ]
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            reason:
+              $ref: '../schemas/reason.yaml'
+  responses:
+    "200":
+      description: 성공
+    default:
+      description: Error
+      content:
+        application/json:
+          schema:
+            $ref: '../schemas/error.yaml'

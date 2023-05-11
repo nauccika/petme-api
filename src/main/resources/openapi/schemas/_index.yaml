@@ -1,0 +1,64 @@
+content:
+  $ref: ./content.yaml
+currentPoint:
+  $ref: ./currentPoint.yaml
+email:
+  $ref: ./email.yaml
+error:
+  $ref: ./error.yaml
+grade:
+  $ref: ./grade.yaml
+keyword:
+  $ref: ./keyword.yaml
+loginId:
+  $ref: ./loginId.yaml
+loginType:
+  $ref: ./loginType.yaml
+newPassword:
+  $ref: ./newPassword.yaml
+order:
+  $ref: ./order.yaml
+otp:
+  $ref: ./otp.yaml
+page:
+  $ref: ./page.yaml
+password:
+  $ref: ./password.yaml
+phone:
+  $ref: ./phone.yaml
+placeNam:
+  $ref: ./placeName.yaml
+point:
+  $ref: ./point.yaml
+pointGubun:
+  $ref: ./pointGubun.yaml
+readCount:
+  $ref: ./readCount.yaml
+reason:
+  $ref: ./reason.yaml
+registerTime:
+  $ref: ./registerTime.yaml
+requiredYn:
+  $ref: ./requiredYn.yaml
+reviewCount:
+  $ref: ./reviewCount.yaml
+reviewId:
+  $ref: ./reviewId.yaml
+size:
+  $ref: ./size.yaml
+termsId:
+  $ref: ./termsId.yaml
+title:
+  $ref: ./title.yaml
+token:
+  $ref: ./token.yaml
+totalReviewCount:
+  $ref: ./totalReviewCount.yaml
+usedPoint:
+  $ref: ./usedPoint.yaml
+userName:
+  $ref: ./userName.yaml
+watchCount:
+  $ref: ./watchCount.yaml
+watchGubun:
+  $ref: ./watchGubun.yaml

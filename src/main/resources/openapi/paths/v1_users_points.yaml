@@ -1,0 +1,35 @@
+get:
+  summary: 포인트 사용 내역
+  description: >
+    내정보 > 포인트.
+    포인트 이력과 장소의 연결고리가 없어 추후 업데이트 예정.
+  security:
+    - bearerAuth: [ ]
+  responses:
+    "200":
+      description: 성공
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - currentPoint
+              - pointHistories
+            properties:
+              currentPoint:
+                $ref: '../schemas/currentPoint.yaml'
+              pointHistories:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    pointGubun:
+                      $ref: '../schemas/pointGubun.yaml'
+                    usedPoint:
+                      $ref: '../schemas/usedPoint.yaml'
+    default:
+      description: Error
+      content:
+        application/json:
+          schema:
+            $ref: '../schemas/error.yaml'

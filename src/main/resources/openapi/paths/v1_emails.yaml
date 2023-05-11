@@ -1,0 +1,23 @@
+get:
+  summary: 이메일 중복 확인
+  description: >
+    회원 가입시 이메일 중복 체크를 하기 위함.
+    200 응답은 에러, 204 응답이 성공이다.
+  parameters:
+    - name: email
+      in: query
+      description: 이메일
+      required: true
+      schema:
+        $ref: '../schemas/email.yaml'
+  responses:
+    "200":
+      description: 등록된 이메일(에러)
+    "204":
+      description: 미사용 이메일(정상)
+    default:
+      description: Error
+      content:
+        application/json:
+          schema:
+            $ref: '../schemas/error.yaml'

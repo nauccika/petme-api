@@ -1,0 +1,29 @@
+put:
+  summary: 휴대폰번호 변경
+  description: >
+    내정보 > 휴대폰번호 변경에서 사용.
+    서버에서 otp 체크, 휴대폰 중복 체크 필요.
+  security:
+    - bearerAuth: [ ]
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            phone:
+              $ref: '../schemas/phone.yaml'
+            otp:
+              $ref: '../schemas/otp.yaml'
+          required:
+            - phone
+            - otp
+  responses:
+    "200":
+      description: 성공
+    default:
+      description: Error
+      content:
+        application/json:
+          schema:
+            $ref: '../schemas/error.yaml'

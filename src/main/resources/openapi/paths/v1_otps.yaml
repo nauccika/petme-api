@@ -1,0 +1,23 @@
+post:
+  summary: SMS 인증
+  description: 회원가입에서 휴대폰 인증을 위해 사용한다.
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            phone:
+              $ref: '../schemas/phone.yaml'
+          required:
+            - phone
+  responses:
+    "201":
+      description: 성공
+    default:
+      description: Error
+      content:
+        application/json:
+          schema:
+            $ref: '../schemas/error.yaml'

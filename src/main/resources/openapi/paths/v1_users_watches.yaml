@@ -1,0 +1,34 @@
+get:
+  summary: 찜 목록
+  description: >
+    내 정보 > 찜 목록 조회
+  security:
+    - bearerAuth: [ ]
+  parameters:
+    - name: watchGubun
+      in: query
+      description: 찜 구분
+      required: true
+      schema:
+        $ref: '../schemas/watchGubun.yaml'
+    - name: page
+      in: query
+      required: true
+      description: 페이지 번호
+      schema:
+        $ref: '../schemas/page.yaml'
+    - name: size
+      in: query
+      required: true
+      description: 페이지 사이즈
+      schema:
+        $ref: '../schemas/size.yaml'
+  responses:
+    200:
+      description: 성공
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              type: object

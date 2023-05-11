@@ -1,0 +1,40 @@
+post:
+  summary: 로그인
+  description: >
+    소셜 및 이메일 로그인. 
+    소셜 로그인은 인증이 성공 되었을때 인증 정보로 호출한다.
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - loginId
+            - password
+            - loginType
+          properties:
+            loginId:
+              $ref: '../schemas/loginId.yaml'
+            password:
+              $ref: '../schemas/password.yaml'
+            loginType:
+              $ref: '../schemas/loginType.yaml'
+  responses:
+    "200":
+      description: 성공
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - token
+            properties:
+              token:
+                $ref: '../schemas/token.yaml'
+    default:
+      description: Error
+      content:
+        application/json:
+          schema:
+            $ref: '../schemas/error.yaml'

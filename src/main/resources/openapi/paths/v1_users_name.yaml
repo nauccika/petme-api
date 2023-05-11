@@ -1,0 +1,27 @@
+put:
+  summary: 내정보 수정
+  description: >
+    내정보 > 닉네임 수정에서 사용.
+    회원가입시 닉네임 생성에 문제가 없는지 확인 필요.
+  security:
+    - bearerAuth: [ ]
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            userName:
+              $ref: '../schemas/userName.yaml'
+          required:
+            - userName
+  responses:
+    '200':
+      description: Ok
+    default:
+      description: Error
+      content:
+        application/json:
+          schema:
+            $ref: '../schemas/error.yaml'

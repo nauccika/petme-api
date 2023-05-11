@@ -1,0 +1,44 @@
+get:
+  summary: 내 리뷰 목록
+  description: >
+    내정보 > 리뷰에서 사용
+  security:
+    - bearerAuth: [ ]
+  responses:
+    "200":
+      description: 성공
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                reviewId:
+                  $ref: '../schemas/reviewId.yaml'
+                grade:
+                  $ref: '../schemas/grade.yaml'
+                placeName:
+                  $ref: '../schemas/placeName.yaml'
+                registerTime:
+                  $ref: '../schemas/registerTime.yaml'
+                keyword:
+                  $ref: '../schemas/keyword.yaml'
+                readCount:
+                  $ref: '../schemas/readCount.yaml'
+                content:
+                  $ref: '../schemas/content.yaml'
+              required:
+                - reviewId
+                - grade
+                - palceName
+                - registerTime
+                - keyword
+                - readCount
+                - content
+    default:
+      description: Error
+      content:
+        application/json:
+          schema:
+            $ref: '../schemas/error.yaml'

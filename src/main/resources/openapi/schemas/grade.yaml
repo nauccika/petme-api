@@ -1,0 +1,3 @@
+type: string
+description: 평점
+example: "9.5"

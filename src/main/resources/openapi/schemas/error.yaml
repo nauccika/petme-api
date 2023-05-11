@@ -1,0 +1,11 @@
+type: object
+required:
+  - message
+properties:
+  message:
+    type: string
+    example: '요청 정보가 올바르지 않습니다'
+    description: 에러 메세지
+  cause:
+    type: string
+    description: 상세 메세지
