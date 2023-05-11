@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="12915dfc-938d-4fc6-9676-fc1433193648" name="petme">
+        <fileTransfer rootFolder="/data/petme3/docker/swagger/doc" accessType="SFTP" host="106.10.54.107" port="1122" sshConfigId="6491e427-463c-4af3-8796-e8e55ee3f773" sshConfig="root@106.10.54.107:1122 password">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>

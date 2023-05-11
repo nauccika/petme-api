@@ -332,3 +332,5 @@ gradle-app.setting
 hs_err_pid*
 
 /docker/data/
+/node/
+/node_modules/
