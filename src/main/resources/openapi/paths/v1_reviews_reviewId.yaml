@@ -1,0 +1,22 @@
+delete:
+  summary: 리뷰 삭제
+  description: >
+    마이 리뷰 > 삭제에서 사용
+  security:
+    - bearerAuth: [ ]
+  parameters:
+    - name: reviewId
+      in: path
+      required: true
+      description: 리뷰 아이디
+      schema:
+        $ref: '../schemas/reviewId.yaml'
+  responses:
+    "200":
+      description: 성공
+    default:
+      description: Error
+      content:
+        application/json:
+          schema:
+            $ref: '../schemas/error.yaml'

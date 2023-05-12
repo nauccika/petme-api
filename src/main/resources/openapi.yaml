@@ -483,6 +483,185 @@ paths:
                 type: array
                 items:
                   type: object
+  /v1/reviews/count:
+    get:
+      summary: 누적 리뷰수
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - totalReviewCount
+                properties:
+                  totalReviewCount:
+                    $ref: '#/components/schemas/totalReviewCount'
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  '/v1/reviews/{reviewId}':
+    delete:
+      summary: 리뷰 삭제
+      description: |
+        마이 리뷰 > 삭제에서 사용
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: reviewId
+          in: path
+          required: true
+          description: 리뷰 아이디
+          schema:
+            $ref: '#/components/schemas/reviewId'
+      responses:
+        '200':
+          description: 성공
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  /v1/places/history:
+    get:
+      summary: 최근 본 장소
+      parameters:
+        - name: page
+          in: query
+          required: true
+          description: 페이지 번호
+          schema:
+            $ref: '#/components/schemas/page'
+        - name: size
+          in: query
+          required: true
+          description: 페이지 사이즈
+          schema:
+            $ref: '#/components/schemas/size'
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    placeName:
+                      $ref: '#/components/schemas/placeNam'
+                    sido:
+                      $ref: '#/components/schemas/sido'
+                    sigungu:
+                      $ref: '#/components/schemas/sigungu'
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  /v1/rankings:
+    get:
+      summary: 랭킹 목록
+      parameters:
+        - name: businessGubun
+          in: query
+          required: true
+          description: 장소 구분
+          schema:
+            $ref: '#/components/schemas/businessGubun'
+        - name: zipcode
+          in: query
+          required: false
+          description: '값이 null인 경우는 위도, 경도로 내 주변 검색'
+          schema:
+            $ref: '#/components/schemas/zipcode'
+        - name: rankingOrder
+          in: query
+          required: true
+          description: 기간
+          schema:
+            $ref: '#/components/schemas/rankingOrder'
+        - name: weekendOpenYn
+          in: query
+          required: true
+          description: 주말 진료 여부
+          schema:
+            $ref: '#/components/schemas/weekendOpenYn'
+        - name: allDayOpenYn
+          in: query
+          required: true
+          description: 24시간 진료 여부
+          schema:
+            $ref: '#/components/schemas/allDayOpenYn'
+        - name: latitude
+          in: query
+          required: true
+          description: 위도 좌표
+          schema:
+            $ref: '#/components/schemas/latitude'
+        - name: longitude
+          in: query
+          required: true
+          description: 경도 좌표
+          schema:
+            $ref: '#/components/schemas/longitude'
+        - name: page
+          in: query
+          required: true
+          description: 페이지 번호
+          schema:
+            $ref: '#/components/schemas/page'
+        - name: size
+          in: query
+          required: true
+          description: 페이지 사이즈
+          schema:
+            $ref: '#/components/schemas/size'
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  description: 랭킹
+                  properties:
+                    placeId:
+                      $ref: '#/components/schemas/placeId'
+                    placeName:
+                      $ref: '#/components/schemas/placeNam'
+                    period:
+                      $ref: '#/components/schemas/period'
+                    ranking:
+                      $ref: '#/components/schemas/ranking'
+                    blogReviewCount:
+                      $ref: '#/components/schemas/blogReviewCount'
+                    visitorReviewCount:
+                      $ref: '#/components/schemas/visitorReviewCount'
+                    distance:
+                      $ref: '#/components/schemas/distance'
+                    openYn:
+                      $ref: '#/components/schemas/openYn'
+                    openTime:
+                      $ref: '#/components/schemas/openTime'
+                    imageUrl:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/imageUrl'
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
 components:
   securitySchemes:
     bearerAuth:
@@ -490,12 +669,36 @@ components:
       scheme: bearer
       bearerFormat: JWT
   schemas:
+    allDayOpenYn:
+      type: string
+      description: 24시간 개점 여부
+      enum:
+        - 'y'
+        - 'n'
+    blogReviewCount:
+      type: integer
+      description: 블로그 리뷰수
+    businessGubun:
+      type: string
+      description: 장소 구분
+      enum:
+        - 병원
+        - 약국
+        - 미용
+        - 용품
+        - 산책
+        - 카페
+        - 호텔
     content:
       type: string
       description: 내용
     currentPoint:
       type: integer
       description: 현재 포인트
+    distance:
+      type: string
+      description: 거리
+      example: 1.2km
     email:
       type: string
       example: petme@petme.kr
@@ -516,9 +719,15 @@ components:
       type: string
       description: 평점
       example: '9.5'
+    imageUrl:
+      type: string
+      description: 장소 이미지 주소
     keyword:
       type: string
       description: 키워드
+    latitude:
+      type: number
+      description: 위도 좌표
     loginId:
       type: string
       example: petme@petme.kr
@@ -531,10 +740,19 @@ components:
         - google
         - apple
         - email
+    longitude:
+      type: number
+      description: 경도 좌표
     newPassword:
       type: string
       example: '********'
       description: 패스워드
+    openTime:
+      type: string
+      description: 영업 시작 시간
+    openYn:
+      type: string
+      description: 영업 여부
     order:
       type: integer
       example: 1
@@ -551,10 +769,20 @@ components:
       type: string
       example: '********'
       description: 비밀번호(사용자 비번 또는 sns 인증토큰)
+    period:
+      type: string
+      description: 기간
+      enum:
+        - 일간
+        - 주간
+        - 월간
     phone:
       type: string
       example: '01033201234'
       description: 휴대폰 번호
+    placeId:
+      type: integer
+      description: 장소 아이디
     placeNam:
       type: string
       description: 장소 이름
@@ -566,6 +794,18 @@ components:
     pointGubun:
       type: string
       description: 포인트 타입
+    ranking:
+      type: string
+      description: 랭킹
+    rankingOrder:
+      type: string
+      description: 랭킹 정렬순서
+      enum:
+        - 일간
+        - 주간
+        - 월간
+        - 거리
+        - 리뷰
     readCount:
       type: integer
       description: 조회수
@@ -587,6 +827,14 @@ components:
     reviewId:
       type: integer
       description: 리뷰 아이디
+    sido:
+      type: string
+      description: 시도
+      example: 서울특별시
+    sigungu:
+      type: string
+      description: 시군구
+      example: 강남구
     size:
       type: integer
       description: 페이지 크기
@@ -611,6 +859,9 @@ components:
       type: string
       example: 홍길동
       description: 사용자 명
+    visitorReviewCount:
+      type: integer
+      description: 방문자 리뷰수
     watchCount:
       type: integer
       example: 5
@@ -622,3 +873,17 @@ components:
         - 장소
         - 콘텐츠
         - 연구소
+    weekendOpenYn:
+      type: string
+      description: 주말 개점 여부
+      enum:
+        - 'y'
+        - 'n'
+    writer:
+      type: string
+      description: 작성자
+      example: 고양이가 최고야
+    zipcode:
+      type: string
+      description: 우편 번호
+      example: 06195

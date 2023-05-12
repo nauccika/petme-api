@@ -33,7 +33,14 @@ paths:
     $ref: './paths/v1_users_points.yaml'
   /v1/users/watches:
     $ref: './paths/v1_users_watches.yaml'
-
+  /v1/reviews/count:
+    $ref: './paths/v1_reviews_count.yaml'
+  /v1/reviews/{reviewId}:
+    $ref: './paths/v1_reviews_reviewId.yaml'
+  /v1/places/history:
+    $ref: './paths/v1_places_history.yaml'
+  /v1/rankings:
+    $ref: './paths/v1_rankings.yaml'
 components:
   securitySchemes:
     bearerAuth:

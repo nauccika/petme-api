@@ -1,0 +1,20 @@
+get:
+  summary: 누적 리뷰수
+  responses:
+    '200':
+      description: Ok
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - totalReviewCount
+            properties:
+              totalReviewCount:
+                $ref: '../schemas/totalReviewCount.yaml'
+    default:
+      description: Error
+      content:
+        application/json:
+          schema:
+            $ref: '../schemas/error.yaml'

@@ -1,0 +1,3 @@
+type: string
+description: 기간
+enum: [일간, 주간, 월간]

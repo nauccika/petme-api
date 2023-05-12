@@ -1,21 +1,39 @@
+allDayOpenYn:
+  $ref: ./allDayOpenYn.yaml
+blogReviewCount:
+  $ref: ./blogReviewCount.yaml
+businessGubun:
+  $ref: ./businessGubun.yaml
 content:
   $ref: ./content.yaml
 currentPoint:
   $ref: ./currentPoint.yaml
+distance:
+  $ref: ./distance.yaml
 email:
   $ref: ./email.yaml
 error:
   $ref: ./error.yaml
 grade:
   $ref: ./grade.yaml
+imageUrl:
+  $ref: ./imageUrl.yaml
 keyword:
   $ref: ./keyword.yaml
+latitude:
+  $ref: ./latitude.yaml
 loginId:
   $ref: ./loginId.yaml
 loginType:
   $ref: ./loginType.yaml
+longitude:
+  $ref: ./longitude.yaml
 newPassword:
   $ref: ./newPassword.yaml
+openTime:
+  $ref: ./openTime.yaml
+openYn:
+  $ref: ./openYn.yaml
 order:
   $ref: ./order.yaml
 otp:
@@ -24,14 +42,22 @@ page:
   $ref: ./page.yaml
 password:
   $ref: ./password.yaml
+period:
+  $ref: ./period.yaml
 phone:
   $ref: ./phone.yaml
+placeId:
+  $ref: ./placeId.yaml
 placeNam:
   $ref: ./placeName.yaml
 point:
   $ref: ./point.yaml
 pointGubun:
   $ref: ./pointGubun.yaml
+ranking:
+  $ref: ./ranking.yaml
+rankingOrder:
+  $ref: ./rankingOrder.yaml
 readCount:
   $ref: ./readCount.yaml
 reason:
@@ -44,6 +70,10 @@ reviewCount:
   $ref: ./reviewCount.yaml
 reviewId:
   $ref: ./reviewId.yaml
+sido:
+  $ref: ./sido.yaml
+sigungu:
+  $ref: ./sigungu.yaml
 size:
   $ref: ./size.yaml
 termsId:
@@ -58,7 +88,15 @@ usedPoint:
   $ref: ./usedPoint.yaml
 userName:
   $ref: ./userName.yaml
+visitorReviewCount:
+  $ref: ./visitorReviewCount.yaml
 watchCount:
   $ref: ./watchCount.yaml
 watchGubun:
   $ref: ./watchGubun.yaml
+weekendOpenYn:
+  $ref: ./weekendOpenYn.yaml
+writer:
+  $ref: ./writer.yaml
+zipcode:
+  $ref: ./zipcode.yaml

@@ -1,0 +1,3 @@
+type: string
+description: 랭킹 정렬순서
+enum: [일간, 주간, 월간, 거리, 리뷰]

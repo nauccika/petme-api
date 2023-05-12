@@ -1,0 +1,3 @@
+type: string
+description: 장소 구분
+enum: [병원, 약국, 미용, 용품, 산책, 카페, 호텔]
