@@ -31,7 +31,7 @@ paths:
     $ref: './paths/v1_users_reviews.yaml'
   /v1/users/reviews/{reviewId}: #내 리뷰 삭제
     $ref: './paths/v1_users_reviews_reviewId.yaml'
-  /v1/users/points:
+  /v1/users/points: #포인트 사용내역
     $ref: './paths/v1_users_points.yaml'
   /v1/users/watches/places: #내가 찜한 장소
     $ref: './paths/v1_users_watches_places.yaml'
@@ -43,16 +43,25 @@ paths:
     $ref: './paths/v1_users_qnas.yaml'
   /v1/users/qnas/comments: #내가 작성한 Q&A 댓글
     $ref: './paths/v1_users_qnas_comments.yaml'
-  /v1/reviews/count:
+#  /v1/users/events: #내 이벤트 목록
+  /v1/events/{eventId}: #이벤트 상세
+    $ref: './paths/v1_events_eventId.yaml'
+  /v1/notices/{noticeId}: #공지 상세
+    $ref: './paths/v1_notices_noticeId.yaml'
+  /v1/reviews/count: #메인-누적 리뷰
     $ref: './paths/v1_reviews_count.yaml'
-  /v1/places/history:
-    $ref: './paths/v1_places_history.yaml'
-  /v1/rankings:
+  /v1/rankings: #내주변 랭킹
     $ref: './paths/v1_rankings.yaml'
+  /v1/reviews: #메인-베스트 리뷰
+    $ref: './paths/v1_reviews.yaml'
+  /v1/places/histories: #최근 본 장소
+    $ref: './paths/v1_places_histories.yaml'
+  /v1/places/histories/{placeId}: #최근 본 장소 삭제
+    $ref: './paths/v1_places_histories_placeId.yaml'
+  /v1/places/recommends: #고객 추천 장소
+    $ref: './paths/v1_places_recommends.yaml'
   /v1/notices:
     $ref: './paths/v1_notices.yaml'
-  /v1/notices/{noticeId}:
-    $ref: './paths/v1_notices_noticeId.yaml'
 components:
   securitySchemes:
     bearerAuth:

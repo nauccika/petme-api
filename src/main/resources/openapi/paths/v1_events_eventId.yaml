@@ -1,0 +1,44 @@
+get:
+  summary: 이벤트 상세
+  description: 이벤트 상세 내용
+  security:
+    - bearerAuth: [ ]
+  parameters:
+    - name: eventId
+      in: path
+      required: true
+      description: 이벤트 아이디
+      schema:
+        $ref: '../schemas/eventId.yaml'
+  responses:
+    "200":
+      description: 성공
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - title
+              - content
+              - eventStartDate
+              - eventEndDate
+              - imageUrl
+            properties:
+              title:
+                $ref: '../schemas/title.yaml'
+              content:
+                $ref: '../schemas/content.yaml'
+              eventStartDate:
+                $ref: '../schemas/eventStartDate.yaml'
+              eventEndDate:
+                $ref: '../schemas/eventEndDate.yaml'
+              imageUrl:
+                $ref: '../schemas/imageUrl.yaml'
+              linkUrl:
+                $ref: '../schemas/linkUrl.yaml'
+    default:
+      description: Error
+      content:
+        application/json:
+          schema:
+            $ref: '../schemas/error.yaml'

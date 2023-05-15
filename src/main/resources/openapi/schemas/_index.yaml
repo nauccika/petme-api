@@ -18,6 +18,12 @@ email:
   $ref: ./email.yaml
 error:
   $ref: ./error.yaml
+eventEndDate:
+  $ref: ./eventEndDate.yaml
+eventId:
+  $ref: ./eventId.yaml
+eventStartDate:
+  $ref: ./eventStartDate.yaml
 grade:
   $ref: ./grade.yaml
 hashtag:

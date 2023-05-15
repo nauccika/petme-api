@@ -1,9 +1,6 @@
 get:
   summary: 공지
-  description: >
-    공지/소식
-  security:
-    - bearerAuth: [ ]
+  description: 공지/소식
   parameters:
     - name: page
       in: query

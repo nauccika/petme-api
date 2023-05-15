@@ -1,0 +1,21 @@
+delete:
+  summary: 최근 본 장소 삭제
+  description: 최근 본 장소 삭제
+  security:
+    - bearerAuth: [ ]
+  parameters:
+    - name: placeId
+      in: path
+      required: true
+      description: 리뷰 아이디
+      schema:
+        $ref: '../schemas/placeId.yaml'
+  responses:
+    "200":
+      description: 성공
+    default:
+      description: Error
+      content:
+        application/json:
+          schema:
+            $ref: '../schemas/error.yaml'

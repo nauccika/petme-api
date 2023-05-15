@@ -1,5 +1,6 @@
 get:
   summary: 누적 리뷰수
+  description: 메인 - 누적 리뷰수
   responses:
     '200':
       description: Ok
