@@ -1,48 +1,10 @@
 get:
-  summary: 랭킹 목록
+  summary: 마이찜-장소
+  description: >
+    내 정보 > 찜 > 장소
+  security:
+    - bearerAuth: [ ]
   parameters:
-    - name: businessGubun
-      in: query
-      required: true
-      description: 장소 구분
-      schema:
-        $ref: '../schemas/businessGubun.yaml'
-    - name: zipcode
-      in: query
-      required: false
-      description: 값이 null인 경우는 위도, 경도로 내 주변 검색
-      schema:
-        $ref: '../schemas/zipcode.yaml'
-    - name: rankingOrder
-      in: query
-      required: true
-      description: 기간
-      schema:
-        $ref: '../schemas/rankingOrder.yaml'
-    - name: weekendOpenYn
-      in: query
-      required: true
-      description: 주말 진료 여부
-      schema:
-        $ref: '../schemas/weekendOpenYn.yaml'
-    - name: allDayOpenYn
-      in: query
-      required: true
-      description: 24시간 진료 여부
-      schema:
-        $ref: '../schemas/allDayOpenYn.yaml'
-    - name: latitude
-      in: query
-      required: true
-      description: 위도 좌표
-      schema:
-        $ref: '../schemas/latitude.yaml'
-    - name: longitude
-      in: query
-      required: true
-      description: 경도 좌표
-      schema:
-        $ref: '../schemas/longitude.yaml'
     - name: page
       in: query
       required: true
@@ -56,15 +18,14 @@ get:
       schema:
         $ref: '../schemas/size.yaml'
   responses:
-    '200':
-      description: Ok
+    200:
+      description: 성공
       content:
         application/json:
           schema:
             type: array
             items:
               type: object
-              description: 랭킹
               properties:
                 placeId:
                   $ref: '../schemas/placeId.yaml'

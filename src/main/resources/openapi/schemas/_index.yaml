@@ -4,6 +4,10 @@ blogReviewCount:
   $ref: ./blogReviewCount.yaml
 businessGubun:
   $ref: ./businessGubun.yaml
+category:
+  $ref: ./category.yaml
+commentCount:
+  $ref: ./CommentCount.yaml
 content:
   $ref: ./content.yaml
 currentPoint:
@@ -16,12 +20,18 @@ error:
   $ref: ./error.yaml
 grade:
   $ref: ./grade.yaml
+hashtag:
+  $ref: ./hashtag.yaml
+htmlYn:
+  $ref: ./htmlYn.yaml
 imageUrl:
   $ref: ./imageUrl.yaml
 keyword:
   $ref: ./keyword.yaml
 latitude:
   $ref: ./latitude.yaml
+linkUrl:
+  $ref: ./linkUrl.yaml
 loginId:
   $ref: ./loginId.yaml
 loginType:
@@ -30,6 +40,10 @@ longitude:
   $ref: ./longitude.yaml
 newPassword:
   $ref: ./newPassword.yaml
+noticeGubun:
+  $ref: ./noticeGubun.yaml
+noticeId:
+  $ref: ./noticeId.yaml
 openTime:
   $ref: ./openTime.yaml
 openYn:
@@ -54,6 +68,12 @@ point:
   $ref: ./point.yaml
 pointGubun:
   $ref: ./pointGubun.yaml
+pushOnOff:
+  $ref: ./pushOnOff.yaml
+qnaId:
+  $ref: ./qnaId.yaml
+raboratoryId:
+  $ref: ./raboratoryId.yaml
 ranking:
   $ref: ./ranking.yaml
 rankingOrder:
@@ -96,7 +116,13 @@ watchGubun:
   $ref: ./watchGubun.yaml
 weekendOpenYn:
   $ref: ./weekendOpenYn.yaml
+withdrawalCause:
+  $ref: ./withdrawalCause.yaml
+writeTime:
+  $ref: ./WriteTime.yaml
 writer:
   $ref: ./writer.yaml
+writerName:
+  $ref: ./writerName.yaml
 zipcode:
   $ref: ./zipcode.yaml

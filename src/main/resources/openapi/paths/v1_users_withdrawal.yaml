@@ -1,4 +1,4 @@
-put:
+post:
   summary: 회원 탈퇴
   description: >
     회원 탈퇴
@@ -11,7 +11,7 @@ put:
           type: object
           properties:
             reason:
-              $ref: '../schemas/reason.yaml'
+              $ref: '../schemas/withdrawalCause.yaml'
   responses:
     "200":
       description: 성공

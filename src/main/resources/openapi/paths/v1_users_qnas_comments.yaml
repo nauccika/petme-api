@@ -1,0 +1,47 @@
+get:
+  summary: 펫 연구소 Q&A 댓글
+  description: 내가 작성한 연구소 Q&A 댓글
+  security:
+    - bearerAuth: [ ]
+  parameters:
+    - name: page
+      in: query
+      required: true
+      description: 페이지 번호
+      schema:
+        $ref: '../schemas/page.yaml'
+    - name: size
+      in: query
+      required: true
+      description: 페이지 사이즈
+      schema:
+        $ref: '../schemas/size.yaml'
+  responses:
+    "200":
+      description: 성공
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              type: object
+              required:
+                - title
+                - content
+                - writeTime
+                - imageUrl
+              properties:
+                title:
+                  $ref: '../schemas/title.yaml'
+                content:
+                  $ref: '../schemas/content.yaml'
+                writeTime:
+                  $ref: '../schemas/writeTime.yaml'
+                imageUrl:
+                  $ref: '../schemas/imageUrl.yaml'
+    default:
+      description: Error
+      content:
+        application/json:
+          schema:
+            $ref: '../schemas/error.yaml'

@@ -5,42 +5,54 @@ info:
 servers:
   - url: https://api.server.test/v1
 paths:
-  /v1/login:
+  /v1/login: #로그인
     $ref: './paths/v1_login.yaml'
-  /v1/emails:
+  /v1/emails: #이메일주소 찾기
     $ref: './paths/v1_emails.yaml'
-  /v1/terms:
+  /v1/emails/check: #이메일 중복 확인
+    $ref: './paths/v1_emails_check.yaml'
+  /v1/terms: #약관 목록 조회
     $ref: './paths/v1_terms.yaml'
-  /v1/opts:
+  /v1/opts: #인증번호 전송
     $ref: './paths/v1_otps.yaml'
-  /v1/password:
-    $ref: './paths/v1_password.yaml'
-  /v1/users:
+  /v1/passwords: #비밀번호 찾기, 재설정
+    $ref: './paths/v1_passwords.yaml'
+  /v1/users: #내정보 조회, 회원가입
     $ref: './paths/v1_users.yaml'
-  /v1/users/email:
-    $ref: './paths/v1_users_email.yaml'
-  /v1/users/password:
-    $ref: './paths/v1_users_password.yaml'
-  /v1/users/name:
+  /v1/users/name: #내정보 수정
     $ref: './paths/v1_users_name.yaml'
-  /v1/users/phone:
+  /v1/users/password: #비밀번호 수정
+    $ref: './paths/v1_users_password.yaml'
+  /v1/users/phone: #휴대폰번호 변경
     $ref: './paths/v1_users_phone.yaml'
-  /v1/users/withdraw:
-    $ref: './paths/v1_users_withdraw.yaml'
-  /v1/users/reviews:
+  /v1/users/withdrawal: #회원 탈퇴
+    $ref: './paths/v1_users_withdrawal.yaml'
+  /v1/users/reviews: #내 리뷰 목록
     $ref: './paths/v1_users_reviews.yaml'
+  /v1/users/reviews/{reviewId}: #내 리뷰 삭제
+    $ref: './paths/v1_users_reviews_reviewId.yaml'
   /v1/users/points:
     $ref: './paths/v1_users_points.yaml'
-  /v1/users/watches:
-    $ref: './paths/v1_users_watches.yaml'
+  /v1/users/watches/places: #내가 찜한 장소
+    $ref: './paths/v1_users_watches_places.yaml'
+  /v1/users/watches/contents: #내가 찜한 콘텐츠
+    $ref: './paths/v1_users_watches_contents.yaml'
+  /v1/users/watches/qnas: #내가 찜한 Q&A
+    $ref: './paths/v1_users_watches_qnas.yaml'
+  /v1/users/qnas: #내가 작성한 Q&A 목록
+    $ref: './paths/v1_users_qnas.yaml'
+  /v1/users/qnas/comments: #내가 작성한 Q&A 댓글
+    $ref: './paths/v1_users_qnas_comments.yaml'
   /v1/reviews/count:
     $ref: './paths/v1_reviews_count.yaml'
-  /v1/reviews/{reviewId}:
-    $ref: './paths/v1_reviews_reviewId.yaml'
   /v1/places/history:
     $ref: './paths/v1_places_history.yaml'
   /v1/rankings:
     $ref: './paths/v1_rankings.yaml'
+  /v1/notices:
+    $ref: './paths/v1_notices.yaml'
+  /v1/notices/{noticeId}:
+    $ref: './paths/v1_notices_noticeId.yaml'
 components:
   securitySchemes:
     bearerAuth:

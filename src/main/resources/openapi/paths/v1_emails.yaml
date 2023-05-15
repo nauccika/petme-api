@@ -1,8 +1,6 @@
 get:
-  summary: 이메일 중복 확인
-  description: >
-    회원 가입시 이메일 중복 체크를 하기 위함.
-    200 응답은 에러, 204 응답이 성공이다.
+  summary: 이메일주소 찾기
+  description: 휴대폰 인증을 통해 이메일 주소를 찾는다.
   parameters:
     - name: email
       in: query
@@ -10,11 +8,30 @@ get:
       required: true
       schema:
         $ref: '../schemas/email.yaml'
+    - name: phone
+      in: query
+      description: 휴대폰
+      required: true
+      schema:
+        $ref: '../schemas/phone.yaml'
+    - name: otp
+      in: query
+      description: otp
+      required: true
+      schema:
+        $ref: '../schemas/otp.yaml'
   responses:
     "200":
-      description: 등록된 이메일(에러)
-    "204":
-      description: 미사용 이메일(정상)
+      description: 이메일
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              email:
+                $ref: '../schemas/email.yaml'
+            required:
+              - email
     default:
       description: Error
       content:

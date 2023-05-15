@@ -587,7 +587,7 @@ paths:
                       $ref: '#/components/schemas/Content'
                     placeName:
                       $ref: '#/components/schemas/PlaceName'
-                    imageUrl:
+                    imageUrls:
                       type: array
                       items:
                         $ref: '#/components/schemas/ImageUrl'
@@ -745,7 +745,7 @@ paths:
                       $ref: '#/components/schemas/OpenYn'
                     openTime:
                       $ref: '#/components/schemas/OpenTime'
-                    imageUrl:
+                    imageUrls:
                       type: array
                       items:
                         $ref: '#/components/schemas/ImageUrl'

@@ -1,0 +1,3 @@
+type: string
+description: 푸시 허용 여부
+enum: [on, off]

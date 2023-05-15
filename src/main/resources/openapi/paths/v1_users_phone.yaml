@@ -1,8 +1,6 @@
 put:
   summary: 휴대폰번호 변경
-  description: >
-    내정보 > 휴대폰번호 변경에서 사용.
-    서버에서 otp 체크, 휴대폰 중복 체크 필요.
+  description: 내정보 > 휴대폰번호 변경
   security:
     - bearerAuth: [ ]
   requestBody:

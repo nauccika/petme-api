@@ -1,0 +1,49 @@
+get:
+  summary: 마이찜-Q&A
+  description: >
+    내 정보 > 찜 > 팻미 연구소 Q&A
+  security:
+    - bearerAuth: [ ]
+  parameters:
+    - name: page
+      in: query
+      required: true
+      description: 페이지 번호
+      schema:
+        $ref: '../schemas/page.yaml'
+    - name: size
+      in: query
+      required: true
+      description: 페이지 사이즈
+      schema:
+        $ref: '../schemas/size.yaml'
+  responses:
+    200:
+      description: 성공
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                qnaId:
+                  $ref: '../schemas/qnaId.yaml'
+                category:
+                  $ref: '../schemas/category.yaml'
+                title:
+                  $ref: '../schemas/title.yaml'
+                writer:
+                  $ref: '../schemas/writer.yaml'
+                writerName:
+                  $ref: '../schemas/writerName.yaml'
+                readCount:
+                  $ref: '../schemas/readCount.yaml'
+                registerTime:
+                  $ref: '../schemas/registerTime.yaml'
+    default:
+      description: Error
+      content:
+        application/json:
+          schema:
+            $ref: '../schemas/error.yaml'

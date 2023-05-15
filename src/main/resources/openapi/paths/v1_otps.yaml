@@ -1,6 +1,6 @@
 post:
-  summary: SMS 인증
-  description: 회원가입에서 휴대폰 인증을 위해 사용한다.
+  summary: 인증번호 전송
+  description: 회원가입에서 휴대폰 인증을 위해 사용 한다.
   requestBody:
     required: true
     content:

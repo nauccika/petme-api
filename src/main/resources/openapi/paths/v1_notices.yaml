@@ -1,0 +1,47 @@
+get:
+  summary: 공지
+  description: >
+    공지/소식
+  security:
+    - bearerAuth: [ ]
+  parameters:
+    - name: page
+      in: query
+      required: true
+      description: 페이지 번호
+      schema:
+        $ref: '../schemas/page.yaml'
+    - name: size
+      in: query
+      required: true
+      description: 페이지 사이즈
+      schema:
+        $ref: '../schemas/size.yaml'
+  responses:
+    200:
+      description: 성공
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                noticeId:
+                  $ref: '../schemas/noticeId.yaml'
+                title:
+                  $ref: '../schemas/title.yaml'
+                registerTime:
+                  $ref: '../schemas/registerTime.yaml'
+                linkUrl:
+                  $ref: '../schemas/linkUrl.yaml'
+                imageUrl:
+                  $ref: '../schemas/imageUrl.yaml'
+                noticeGubun:
+                  $ref: '../schemas/noticeGubun.yaml'
+    default:
+      description: Error
+      content:
+        application/json:
+          schema:
+            $ref: '../schemas/error.yaml'

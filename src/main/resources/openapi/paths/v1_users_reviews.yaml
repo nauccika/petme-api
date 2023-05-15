@@ -1,9 +1,21 @@
 get:
   summary: 내 리뷰 목록
-  description: >
-    내정보 > 리뷰에서 사용
+  description: 내정보 > 리뷰
   security:
     - bearerAuth: [ ]
+  parameters:
+    - name: page
+      in: query
+      required: true
+      description: 페이지 번호
+      schema:
+        $ref: '../schemas/page.yaml'
+    - name: size
+      in: query
+      required: true
+      description: 페이지 사이즈
+      schema:
+        $ref: '../schemas/size.yaml'
   responses:
     "200":
       description: 성공
@@ -28,10 +40,14 @@ get:
                   $ref: '../schemas/readCount.yaml'
                 content:
                   $ref: '../schemas/content.yaml'
+                imageUrls:
+                  type: array
+                  items:
+                    $ref: '../schemas/imageUrl.yaml'
               required:
                 - reviewId
                 - grade
-                - palceName
+                - placeName
                 - registerTime
                 - keyword
                 - readCount

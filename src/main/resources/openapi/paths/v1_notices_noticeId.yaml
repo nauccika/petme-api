@@ -1,0 +1,47 @@
+get:
+  summary: 공지
+  description: >
+    공지/소식
+  security:
+    - bearerAuth: [ ]
+  parameters:
+    - name: noticeId
+      in: path
+      required: true
+      description: 공지사항 아이디
+      schema:
+        $ref: '../schemas/noticeId.yaml'
+  responses:
+    200:
+      description: 성공
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              title:
+                $ref: '../schemas/title.yaml'
+              writer:
+                $ref: '../schemas/writer.yaml'
+              writerName:
+                $ref: '../schemas/writerName.yaml'
+              content:
+                $ref: '../schemas/content.yaml'
+              htmlYn:
+                $ref: '../schemas/htmlYn.yaml'
+              readCount:
+                $ref: '../schemas/readCount.yaml'
+              registerTime:
+                $ref: '../schemas/registerTime.yaml'
+              linkUrl:
+                $ref: '../schemas/linkUrl.yaml'
+              imageUrls:
+                $ref: '../schemas/imageUrl.yaml'
+              noticeGubun:
+                $ref: '../schemas/noticeGubun.yaml'
+    default:
+      description: Error
+      content:
+        application/json:
+          schema:
+            $ref: '../schemas/error.yaml'

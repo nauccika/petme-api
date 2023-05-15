@@ -1,0 +1,25 @@
+get:
+  summary: 인증번호 확인
+  description: 휴대폰 인증을 수행한다.
+  parameters:
+    - name: phone
+      in: query
+      description: 휴대폰
+      required: true
+      schema:
+        $ref: '../schemas/phone.yaml'
+    - name: otp
+      in: query
+      description: otp
+      required: true
+      schema:
+        $ref: '../schemas/otp.yaml'
+  responses:
+    "200":
+      description: 성공
+    default:
+      description: Error
+      content:
+        application/json:
+          schema:
+            $ref: '../schemas/error.yaml'

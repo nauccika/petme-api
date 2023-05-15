@@ -1,8 +1,6 @@
 post:
   summary: 로그인
-  description: >
-    소셜 및 이메일 로그인. 
-    소셜 로그인은 인증이 성공 되었을때 인증 정보로 호출한다.
+  description: 소셜 및 이메일 로그인 요청
   requestBody:
     required: true
     content:
