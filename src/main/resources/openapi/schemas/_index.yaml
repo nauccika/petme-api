@@ -120,6 +120,8 @@ watchCount:
   $ref: ./watchCount.yaml
 watchGubun:
   $ref: ./watchGubun.yaml
+watchId:
+  $ref: ./watchId.yaml
 weekendOpenYn:
   $ref: ./weekendOpenYn.yaml
 withdrawalCause:

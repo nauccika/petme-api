@@ -1,5 +1,6 @@
 get:
   summary: 랭킹 목록
+  description: 62p 메인-내주변 랭킹
   parameters:
     - name: businessGubun
       in: query

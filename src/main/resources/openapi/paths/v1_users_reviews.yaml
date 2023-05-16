@@ -1,6 +1,6 @@
 get:
   summary: 내 리뷰 목록
-  description: 내정보 > 리뷰
+  description: 44p 마이-리뷰
   security:
     - bearerAuth: [ ]
   parameters:
@@ -36,8 +36,6 @@ get:
                   $ref: '../schemas/registerTime.yaml'
                 keyword:
                   $ref: '../schemas/keyword.yaml'
-                readCount:
-                  $ref: '../schemas/readCount.yaml'
                 content:
                   $ref: '../schemas/content.yaml'
                 imageUrls:
@@ -50,7 +48,6 @@ get:
                 - placeName
                 - registerTime
                 - keyword
-                - readCount
                 - content
     default:
       description: Error

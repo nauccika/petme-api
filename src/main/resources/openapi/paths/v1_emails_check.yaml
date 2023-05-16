@@ -1,6 +1,8 @@
 get:
   summary: 이메일 중복 확인
-  description: 회원 가입시 이메일 중복 체크.
+  description: >
+    13p 중복확인 클릭시 호출<br>
+    응답이 200이면 중복, 204인 경우 정상<br>
   parameters:
     - name: email
       in: query

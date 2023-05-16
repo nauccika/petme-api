@@ -1,6 +1,6 @@
 post:
   summary: 로그인
-  description: 소셜 및 이메일 로그인 요청
+  description: 12p 로그인 버튼 클릭시 호출
   requestBody:
     required: true
     content:

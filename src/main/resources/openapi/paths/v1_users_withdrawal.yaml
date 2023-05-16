@@ -1,7 +1,6 @@
 post:
   summary: 회원 탈퇴
-  description: >
-    회원 탈퇴
+  description: 41p 회원 탈퇴
   security:
     - bearerAuth: [ ]
   requestBody:

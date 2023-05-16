@@ -2,7 +2,7 @@ get:
   security:
     - bearerAuth: []
   summary: 내정보 조회
-  description: 인증토큰을 통해 사용자를 식별하기 때문에 별도의 요청 값은 없다.
+  description: 28p 내정보 조회
   responses:
     "200":
       description: 정상
@@ -32,7 +32,9 @@ get:
                 $ref: '../schemas/pushOnOff.yaml'
 post:
   summary: 회원 가입
-  description: 회원 가입
+  description: >
+    13p 회원 가입 요청<br>
+    sns 로그인을 통한 회원 가입은 어떻게 처리할 것인가?<br>
   requestBody:
     required: true
     content:

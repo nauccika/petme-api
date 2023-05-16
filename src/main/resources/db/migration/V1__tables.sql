@@ -200,6 +200,8 @@ CREATE TABLE `tb_place`
     `visitor_review_count` int(11) unsigned DEFAULT '0' COMMENT '방문자 리뷰수',
     `street_name_address`  varchar(1024) DEFAULT NULL COMMENT '도로명 주소',
     `lot_number_address`   varchar(1024) DEFAULT NULL COMMENT '지번 주소',
+    `way_to_come1`         varchar(128)  DEFAULT NULL COMMENT '오시는 길 1',
+    `way_to_come2`         varchar(128)  DEFAULT NULL COMMENT '오시는 길 2',
     `zipcode`              varchar(20)   DEFAULT NULL COMMENT '우편번호',
     `phone`                varchar(20)   DEFAULT NULL COMMENT '전화번호(대표)',
     `payment_method`       varchar(80)   DEFAULT NULL COMMENT '결제 수단',

@@ -1,15 +1,15 @@
 delete:
-  summary: 리뷰 삭제
-  description: 44p 마이-리뷰 삭제
+  summary: 찜 삭제
+  description: 52p 마이-찜-삭제
   security:
     - bearerAuth: [ ]
   parameters:
-    - name: reviewId
+    - name: watchId
       in: path
       required: true
-      description: 리뷰 아이디
+      description: 찜 아이디
       schema:
-        $ref: '../schemas/reviewId.yaml'
+        $ref: '../schemas/watchId.yaml'
   responses:
     "200":
       description: 성공

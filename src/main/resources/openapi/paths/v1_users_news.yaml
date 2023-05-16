@@ -1,6 +1,8 @@
 get:
-  summary: 펫 연구소 Q&A 작성글
-  description: 55p 마이-펫 연구소 작성글
+  summary: 마이-이벤트/공지사항
+  description: >
+    57p 마이-이벤트/공지사항<br>
+    응답 필드 미정
   security:
     - bearerAuth: [ ]
   parameters:
@@ -17,7 +19,7 @@ get:
       schema:
         $ref: '../schemas/size.yaml'
   responses:
-    "200":
+    200:
       description: 성공
       content:
         application/json:
@@ -25,24 +27,13 @@ get:
             type: array
             items:
               type: object
-              required:
-                - category
-                - title
-                - writer
-                - writeTime
-                - commentCount
-                - imageUrl
               properties:
-                category:
-                  $ref: '../schemas/category.yaml'
+                eventId:
+                  $ref: '../schemas/eventId.yaml'
                 title:
                   $ref: '../schemas/title.yaml'
-                writer:
-                  $ref: '../schemas/writer.yaml'
-                writeTime:
-                  $ref: '../schemas/writeTime.yaml'
-                commentCount:
-                  $ref: '../schemas/commentCount.yaml'
+                registerTime:
+                  $ref: '../schemas/registerTime.yaml'
                 imageUrl:
                   $ref: '../schemas/imageUrl.yaml'
     default:

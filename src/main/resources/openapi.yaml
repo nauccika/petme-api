@@ -8,7 +8,7 @@ paths:
   /v1/login:
     post:
       summary: 로그인
-      description: 소셜 및 이메일 로그인 요청
+      description: 12p 로그인 버튼 클릭시 호출
       requestBody:
         required: true
         content:
@@ -44,51 +44,11 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
-  /v1/emails:
-    get:
-      summary: 이메일주소 찾기
-      description: 휴대폰 인증을 통해 이메일 주소를 찾는다.
-      parameters:
-        - name: email
-          in: query
-          description: 이메일
-          required: true
-          schema:
-            $ref: '#/components/schemas/email'
-        - name: phone
-          in: query
-          description: 휴대폰
-          required: true
-          schema:
-            $ref: '#/components/schemas/phone'
-        - name: otp
-          in: query
-          description: otp
-          required: true
-          schema:
-            $ref: '#/components/schemas/otp'
-      responses:
-        '200':
-          description: 이메일
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  email:
-                    $ref: '#/components/schemas/email'
-                required:
-                  - email
-        default:
-          description: Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
   /v1/emails/check:
     get:
       summary: 이메일 중복 확인
-      description: 회원 가입시 이메일 중복 체크.
+      description: |
+        13p 중복확인 클릭시 호출<br> 응답이 200이면 중복, 204인 경우 정상<br>
       parameters:
         - name: email
           in: query
@@ -105,124 +65,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
-  /v1/terms:
-    get:
-      summary: 약관 목록 조회
-      description: 약관을 DB로 관리하지 않을 경우 필요 없다.
-      responses:
-        '200':
-          description: 정상
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-                  description: 약관 내용
-                  required:
-                    - title
-                    - content
-                    - requiredYn
-                    - order
-                  properties:
-                    title:
-                      $ref: '#/components/schemas/title'
-                    content:
-                      $ref: '#/components/schemas/content'
-                    requiredYn:
-                      $ref: '#/components/schemas/requiredYn'
-                    order:
-                      $ref: '#/components/schemas/order'
-        default:
-          description: Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
-  /v1/opts:
-    post:
-      summary: 인증번호 전송
-      description: 회원가입에서 휴대폰 인증을 위해 사용 한다.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                phone:
-                  $ref: '#/components/schemas/phone'
-              required:
-                - phone
-      responses:
-        '201':
-          description: 성공
-        default:
-          description: Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
-  /v1/passwords:
-    get:
-      summary: 비밀번호 찾기
-      description: 휴대폰 인증을 통해 비밀번호 찾기
-      parameters:
-        - name: phone
-          in: query
-          description: 휴대폰
-          required: true
-          schema:
-            $ref: '#/components/schemas/phone'
-        - name: otp
-          in: query
-          description: otp
-          required: true
-          schema:
-            $ref: '#/components/schemas/otp'
-      responses:
-        '200':
-          description: 성공
-        default:
-          description: Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
-    put:
-      summary: 비밀번호 재설정
-      description: 휴대폰 인증을 통해 비밀번호 재설정
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                phone:
-                  $ref: '#/components/schemas/phone'
-                otp:
-                  $ref: '#/components/schemas/otp'
-                password:
-                  $ref: '#/components/schemas/password'
-              required:
-                - phone
-                - otp
-                - password
-      responses:
-        '200':
-          description: 성공
-        default:
-          description: Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
   /v1/users:
     get:
       security:
         - bearerAuth: []
       summary: 내정보 조회
-      description: 인증토큰을 통해 사용자를 식별하기 때문에 별도의 요청 값은 없다.
+      description: 28p 내정보 조회
       responses:
         '200':
           description: 정상
@@ -252,7 +100,8 @@ paths:
                     $ref: '#/components/schemas/pushOnOff'
     post:
       summary: 회원 가입
-      description: 회원 가입
+      description: |
+        13p 회원 가입 요청<br> sns 로그인을 통한 회원 가입은 어떻게 처리할 것인가?<br>
       requestBody:
         required: true
         content:
@@ -291,10 +140,159 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
+  /v1/opts:
+    post:
+      summary: 인증번호 전송
+      description: |
+        휴대폰 인증을 위해 sms로 otp를 발송<br> sms로 otp 발송 후 phone, otp, registerTime, expirationTime 를 저장해야 한다<br>
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                phone:
+                  $ref: '#/components/schemas/phone'
+              required:
+                - phone
+      responses:
+        '201':
+          description: 성공
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  /v1/emails:
+    get:
+      summary: 이메일주소 찾기
+      description: 기획서 15p 이메일주소 찾기 클릭시
+      parameters:
+        - name: phone
+          in: query
+          description: 휴대폰
+          required: true
+          schema:
+            $ref: '#/components/schemas/phone'
+        - name: otp
+          in: query
+          description: otp
+          required: true
+          schema:
+            $ref: '#/components/schemas/otp'
+      responses:
+        '200':
+          description: 이메일
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  email:
+                    $ref: '#/components/schemas/email'
+                required:
+                  - email
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  /v1/passwords:
+    get:
+      summary: 비밀번호 찾기
+      description: 17p 비밀번호 찾기 클릭
+      parameters:
+        - name: phone
+          in: query
+          description: 휴대폰
+          required: true
+          schema:
+            $ref: '#/components/schemas/phone'
+        - name: otp
+          in: query
+          description: otp
+          required: true
+          schema:
+            $ref: '#/components/schemas/otp'
+      responses:
+        '200':
+          description: 성공
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+    put:
+      summary: 비밀번호 재설정
+      description: 18p 확인 버튼 클릭
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                phone:
+                  $ref: '#/components/schemas/phone'
+                otp:
+                  $ref: '#/components/schemas/otp'
+                password:
+                  $ref: '#/components/schemas/password'
+              required:
+                - phone
+                - otp
+                - password
+      responses:
+        '200':
+          description: 성공
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  /v1/terms:
+    get:
+      summary: 약관 목록 조회
+      description: |
+        약관을 DB로 관리하지 않을 경우 필요 없다<br>
+      responses:
+        '200':
+          description: 정상
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  description: 약관 내용
+                  required:
+                    - title
+                    - content
+                    - requiredYn
+                    - order
+                  properties:
+                    title:
+                      $ref: '#/components/schemas/title'
+                    content:
+                      $ref: '#/components/schemas/content'
+                    requiredYn:
+                      $ref: '#/components/schemas/requiredYn'
+                    order:
+                      $ref: '#/components/schemas/order'
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
   /v1/users/name:
     put:
       summary: 내정보 수정
-      description: 내정보 > 닉네임 수정
+      description: 37p 닉네임 수정
       security:
         - bearerAuth: []
       requestBody:
@@ -320,7 +318,7 @@ paths:
   /v1/users/password:
     put:
       summary: 비밀번호 수정
-      description: 내정보 수정 > 비밀번호 변경
+      description: 38p 비밀번호 변경
       security:
         - bearerAuth: []
       requestBody:
@@ -348,7 +346,7 @@ paths:
   /v1/users/phone:
     put:
       summary: 휴대폰번호 변경
-      description: 내정보 > 휴대폰번호 변경
+      description: 39p 휴대폰번호 변경
       security:
         - bearerAuth: []
       requestBody:
@@ -376,8 +374,7 @@ paths:
   /v1/users/withdrawal:
     post:
       summary: 회원 탈퇴
-      description: |
-        회원 탈퇴
+      description: 41p 회원 탈퇴
       security:
         - bearerAuth: []
       requestBody:
@@ -400,7 +397,7 @@ paths:
   /v1/users/reviews:
     get:
       summary: 내 리뷰 목록
-      description: 내정보 > 리뷰
+      description: 44p 마이-리뷰
       security:
         - bearerAuth: []
       parameters:
@@ -436,8 +433,6 @@ paths:
                       $ref: '#/components/schemas/registerTime'
                     keyword:
                       $ref: '#/components/schemas/keyword'
-                    readCount:
-                      $ref: '#/components/schemas/readCount'
                     content:
                       $ref: '#/components/schemas/content'
                     imageUrls:
@@ -450,7 +445,6 @@ paths:
                     - placeName
                     - registerTime
                     - keyword
-                    - readCount
                     - content
         default:
           description: Error
@@ -461,8 +455,7 @@ paths:
   '/v1/users/reviews/{reviewId}':
     delete:
       summary: 리뷰 삭제
-      description: |
-        마이 리뷰 > 삭제에서 사용
+      description: 44p 마이-리뷰 삭제
       security:
         - bearerAuth: []
       parameters:
@@ -484,7 +477,7 @@ paths:
   /v1/users/points:
     get:
       summary: 포인트 사용 내역
-      description: 포인트 이력과 장소의 연결고리가 없어 추후 업데이트 예정.
+      description: 47p 마이-포인트
       security:
         - bearerAuth: []
       responses:
@@ -518,8 +511,7 @@ paths:
   /v1/users/watches/places:
     get:
       summary: 마이찜-장소
-      description: |
-        내 정보 > 찜 > 장소
+      description: 52p 마이-찜-장소
       security:
         - bearerAuth: []
       parameters:
@@ -576,8 +568,7 @@ paths:
   /v1/users/watches/contents:
     get:
       summary: 마이찜-콘텐츠
-      description: |
-        내 정보 > 찜 > 콘텐츠
+      description: 52p 마이-찜-콘텐츠
       security:
         - bearerAuth: []
       parameters:
@@ -620,8 +611,7 @@ paths:
   /v1/users/watches/qnas:
     get:
       summary: 마이찜-Q&A
-      description: |
-        내 정보 > 찜 > 팻미 연구소 Q&A
+      description: 52p 마이-찜-펫 연구소 Q&A
       security:
         - bearerAuth: []
       parameters:
@@ -667,10 +657,32 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
+  '/v1/users/watches/{watchId}':
+    delete:
+      summary: 찜 삭제
+      description: 52p 마이-찜-삭제
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: watchId
+          in: path
+          required: true
+          description: 찜 아이디
+          schema:
+            $ref: '#/components/schemas/watchId'
+      responses:
+        '200':
+          description: 성공
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
   /v1/users/qnas:
     get:
       summary: 펫 연구소 Q&A 작성글
-      description: 내가 찜한 연구소 Q&A 작성글
+      description: 55p 마이-펫 연구소 작성글
       security:
         - bearerAuth: []
       parameters:
@@ -726,7 +738,7 @@ paths:
   /v1/users/qnas/comments:
     get:
       summary: 펫 연구소 Q&A 댓글
-      description: 내가 작성한 연구소 Q&A 댓글
+      description: 55p 마이-펫연구소 작성 댓글
       security:
         - bearerAuth: []
       parameters:
@@ -771,10 +783,54 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
+  /v1/users/news:
+    get:
+      summary: 마이-이벤트/공지사항
+      description: |
+        57p 마이-이벤트/공지사항<br> 응답 필드 미정
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          required: true
+          description: 페이지 번호
+          schema:
+            $ref: '#/components/schemas/page'
+        - name: size
+          in: query
+          required: true
+          description: 페이지 사이즈
+          schema:
+            $ref: '#/components/schemas/size'
+      responses:
+        '200':
+          description: 성공
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    eventId:
+                      $ref: '#/components/schemas/eventId'
+                    title:
+                      $ref: '#/components/schemas/title'
+                    registerTime:
+                      $ref: '#/components/schemas/registerTime'
+                    imageUrl:
+                      $ref: '#/components/schemas/imageUrl'
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
   '/v1/events/{eventId}':
     get:
       summary: 이벤트 상세
-      description: 이벤트 상세 내용
+      description: 58p 이벤트 상세
       security:
         - bearerAuth: []
       parameters:
@@ -819,8 +875,7 @@ paths:
   '/v1/notices/{noticeId}':
     get:
       summary: 공지
-      description: |
-        공지/소식
+      description: 59p 공지 상세
       security:
         - bearerAuth: []
       parameters:
@@ -889,6 +944,7 @@ paths:
   /v1/rankings:
     get:
       summary: 랭킹 목록
+      description: 62p 메인-내주변 랭킹
       parameters:
         - name: businessGubun
           in: query
@@ -1048,6 +1104,46 @@ paths:
                       type: array
                       items:
                         $ref: '#/components/schemas/imageUrl'
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  '/v1/reviews/{reviewId}':
+    get:
+      summary: 리뷰 목록
+      description: 80p 리뷰 상세
+      parameters:
+        - name: reviewId
+          in: path
+          required: true
+          description: 리뷰 아이디
+          schema:
+            $ref: '#/components/schemas/reviewId'
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: object
+                description: 리뷰
+                properties:
+                  grade:
+                    $ref: '#/components/schemas/grade'
+                  registerTime:
+                    $ref: '#/components/schemas/registerTime'
+                  writer:
+                    $ref: '#/components/schemas/writer'
+                  content:
+                    $ref: '#/components/schemas/content'
+                  placeName:
+                    $ref: '#/components/schemas/placeNam'
+                  imageUrls:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/imageUrl'
         default:
           description: Error
           content:
@@ -1494,6 +1590,9 @@ components:
         - 장소
         - 콘텐츠
         - 연구소
+    watchId:
+      type: integer
+      description: 찜 아이디
     weekendOpenYn:
       type: string
       description: 주말 개점 여부

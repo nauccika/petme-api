@@ -1,0 +1,39 @@
+get:
+  summary: 리뷰 목록
+  description: 80p 리뷰 상세
+  parameters:
+    - name: reviewId
+      in: path
+      required: true
+      description: 리뷰 아이디
+      schema:
+        $ref: '../schemas/reviewId.yaml'
+  responses:
+    '200':
+      description: Ok
+      content:
+        application/json:
+          schema:
+            type: object
+            description: 리뷰
+            properties:
+              grade:
+                $ref: '../schemas/grade.yaml'
+              registerTime:
+                $ref: '../schemas/registerTime.yaml'
+              writer:
+                $ref: '../schemas/writer.yaml'
+              content:
+                $ref: '../schemas/content.yaml'
+              placeName:
+                $ref: '../schemas/placeName.yaml'
+              imageUrls:
+                type: array
+                items:
+                  $ref: '../schemas/imageUrl.yaml'
+    default:
+      description: Error
+      content:
+        application/json:
+          schema:
+            $ref: '../schemas/error.yaml'

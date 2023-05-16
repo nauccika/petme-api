@@ -1,6 +1,8 @@
 post:
   summary: 인증번호 전송
-  description: 회원가입에서 휴대폰 인증을 위해 사용 한다.
+  description: > 
+    휴대폰 인증을 위해 sms로 otp를 발송<br>
+    sms로 otp 발송 후 phone, otp, registerTime, expirationTime 를 저장해야 한다<br>
   requestBody:
     required: true
     content:

@@ -1,13 +1,7 @@
 get:
   summary: 이메일주소 찾기
-  description: 휴대폰 인증을 통해 이메일 주소를 찾는다.
+  description: 기획서 15p 이메일주소 찾기 클릭시
   parameters:
-    - name: email
-      in: query
-      description: 이메일
-      required: true
-      schema:
-        $ref: '../schemas/email.yaml'
     - name: phone
       in: query
       description: 휴대폰

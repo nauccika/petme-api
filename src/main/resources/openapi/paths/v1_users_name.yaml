@@ -1,6 +1,6 @@
 put:
   summary: 내정보 수정
-  description: 내정보 > 닉네임 수정
+  description: 37p 닉네임 수정
   security:
     - bearerAuth: [ ]
   requestBody:

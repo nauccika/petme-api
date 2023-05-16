@@ -1,6 +1,6 @@
 get:
   summary: 포인트 사용 내역
-  description: 포인트 이력과 장소의 연결고리가 없어 추후 업데이트 예정.
+  description: 47p 마이-포인트
   security:
     - bearerAuth: [ ]
   responses:

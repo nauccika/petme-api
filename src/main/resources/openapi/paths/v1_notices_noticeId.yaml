@@ -1,7 +1,6 @@
 get:
   summary: 공지
-  description: >
-    공지/소식
+  description: 59p 공지 상세
   security:
     - bearerAuth: [ ]
   parameters:

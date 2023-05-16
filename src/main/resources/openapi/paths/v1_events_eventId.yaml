@@ -1,6 +1,6 @@
 get:
   summary: 이벤트 상세
-  description: 이벤트 상세 내용
+  description: 58p 이벤트 상세
   security:
     - bearerAuth: [ ]
   parameters:

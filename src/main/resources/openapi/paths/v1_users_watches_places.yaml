@@ -1,7 +1,6 @@
 get:
   summary: 마이찜-장소
-  description: >
-    내 정보 > 찜 > 장소
+  description: 52p 마이-찜-장소
   security:
     - bearerAuth: [ ]
   parameters:

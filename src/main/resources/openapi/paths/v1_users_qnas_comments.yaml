@@ -1,6 +1,6 @@
 get:
   summary: 펫 연구소 Q&A 댓글
-  description: 내가 작성한 연구소 Q&A 댓글
+  description: 55p 마이-펫연구소 작성 댓글
   security:
     - bearerAuth: [ ]
   parameters:
