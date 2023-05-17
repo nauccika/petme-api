@@ -53,6 +53,8 @@ paths:
     $ref: './paths/v1_notices_noticeId.yaml'
   /v1/reviews/count: #메인-누적 리뷰
     $ref: './paths/v1_reviews_count.yaml'
+  /v1/rankings/categories: #랭킹 카테고리 목록
+    $ref: './paths/v1_rankings_categories.yaml'
   /v1/rankings: #내주변 랭킹
     $ref: './paths/v1_rankings.yaml'
   /v1/reviews: #메인-베스트 리뷰

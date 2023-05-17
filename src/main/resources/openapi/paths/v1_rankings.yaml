@@ -1,6 +1,33 @@
 get:
   summary: 랭킹 목록
-  description: 62p 메인-내주변 랭킹
+  description: |
+    62p 메인-내주변 랭킹
+    ```
+    -- 랭킹리스트
+    select
+    a.id as placeId,
+    a.name as placeName,
+    a.ranking,
+    a.blog_review_count as blogReviewCount,
+    a.visitor_review_count as visitorReviewCount,
+    round(ST_Distance_Sphere(ST_GeomFromText('POINT(127.027528 37.497637)'), POINT(longitude, latitude)), 0) as distance,
+    b.all_year_round_yn as allYearRoundYn,
+    a.street_name_address as streetNameAddress,
+    a.blog_review_count as blogReviewCount,
+    fn_open_yn(a.id) as openYn,
+    fn_open_time(a.id) as openTime
+    from tb_place a
+    left outer join tb_place_business_hours b on a.id = b.tb_place_id
+    where zipcode >= (select min(zipcode) from tb_zipcode where sido = '서울특별시' and sigungu = '강남구')
+    and zipcode <= (select max(zipcode) from tb_zipcode where sido = '서울특별시' and sigungu = '강남구')
+    limit 0, 10;
+    
+    -- 랭킹파일 리스트
+    select b.original_name as imageUrl
+    from tb_place a, tb_file b
+    where a.id = b.tb_place_id
+    and a.id = 1;
+    ```
   parameters:
     - name: businessGubun
       in: query
@@ -71,8 +98,6 @@ get:
                   $ref: '../schemas/placeId.yaml'
                 placeName:
                   $ref: '../schemas/placeName.yaml'
-                period:
-                  $ref: '../schemas/period.yaml'
                 ranking:
                   $ref: '../schemas/ranking.yaml'
                 blogReviewCount:
@@ -81,6 +106,10 @@ get:
                   $ref: '../schemas/visitorReviewCount.yaml'
                 distance:
                   $ref: '../schemas/distance.yaml'
+                allYearRoundYn:
+                  $ref: '../schemas/allYearRoundYn.yaml'
+                streetNameAddress:
+                  $ref: '../schemas/streetNameAddress.yaml'
                 openYn:
                   $ref: '../schemas/openYn.yaml'
                 openTime:

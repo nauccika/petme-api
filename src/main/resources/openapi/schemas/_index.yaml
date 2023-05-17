@@ -1,5 +1,7 @@
 allDayOpenYn:
   $ref: ./allDayOpenYn.yaml
+allYearRoundYn:
+  $ref: ./allYearRoundYn.yaml
 blogReviewCount:
   $ref: ./blogReviewCount.yaml
 businessGubun:
@@ -102,6 +104,8 @@ sigungu:
   $ref: ./sigungu.yaml
 size:
   $ref: ./size.yaml
+streetNameAddress:
+  $ref: ./streetNameAddress.yaml
 termsId:
   $ref: ./termsId.yaml
 title:
@@ -127,7 +131,7 @@ weekendOpenYn:
 withdrawalCause:
   $ref: ./withdrawalCause.yaml
 writeTime:
-  $ref: ./WriteTime.yaml
+  $ref: ./writeTime.yaml
 writer:
   $ref: ./writer.yaml
 writerName:

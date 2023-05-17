@@ -1,0 +1,30 @@
+get:
+  summary: 랭킹 카테고리 목록
+  description: |
+    62p 메인-랭킹 카테고리
+    ```
+    select business_gubun
+      from tb_place
+    group by business_gubun;
+    ```
+  responses:
+    '200':
+      description: Ok
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              type: object
+              description: 랭킹
+              properties:
+                title:
+                  $ref: '../schemas/title.yaml'
+                imageUrl:
+                  $ref: '../schemas/imageUrl.yaml'
+    default:
+      description: Error
+      content:
+        application/json:
+          schema:
+            $ref: '../schemas/error.yaml'

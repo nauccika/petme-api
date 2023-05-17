@@ -722,8 +722,7 @@ paths:
                     writer:
                       $ref: '#/components/schemas/writer'
                     writeTime:
-                      type: string
-                      description: 게시글 작성일
+                      $ref: '#/components/schemas/writeTime'
                     commentCount:
                       type: integer
                       description: 댓글 수
@@ -774,7 +773,7 @@ paths:
                     content:
                       $ref: '#/components/schemas/content'
                     writeTime:
-                      $ref: '#/paths/~1v1~1users~1qnas/get/responses/200/content/application~1json/schema/items/properties/writeTime'
+                      $ref: '#/components/schemas/writeTime'
                     imageUrl:
                       $ref: '#/components/schemas/imageUrl'
         default:
@@ -941,10 +940,68 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
+  /v1/rankings/categories:
+    get:
+      summary: 랭킹 카테고리 목록
+      description: |
+        62p 메인-랭킹 카테고리
+        ```
+        select business_gubun
+          from tb_place
+        group by business_gubun;
+        ```
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  description: 랭킹
+                  properties:
+                    title:
+                      $ref: '#/components/schemas/title'
+                    imageUrl:
+                      $ref: '#/components/schemas/imageUrl'
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
   /v1/rankings:
     get:
       summary: 랭킹 목록
-      description: 62p 메인-내주변 랭킹
+      description: |
+        62p 메인-내주변 랭킹
+        ```
+        -- 랭킹리스트
+        select
+        a.id as placeId,
+        a.name as placeName,
+        a.ranking,
+        a.blog_review_count as blogReviewCount,
+        a.visitor_review_count as visitorReviewCount,
+        round(ST_Distance_Sphere(ST_GeomFromText('POINT(127.027528 37.497637)'), POINT(longitude, latitude)), 0) as distance,
+        b.all_year_round_yn as allYearRoundYn,
+        a.street_name_address as streetNameAddress,
+        a.blog_review_count as blogReviewCount,
+        fn_open_yn(a.id) as openYn,
+        fn_open_time(a.id) as openTime
+        from tb_place a
+        left outer join tb_place_business_hours b on a.id = b.tb_place_id
+        where zipcode >= (select min(zipcode) from tb_zipcode where sido = '서울특별시' and sigungu = '강남구')
+        and zipcode <= (select max(zipcode) from tb_zipcode where sido = '서울특별시' and sigungu = '강남구')
+        limit 0, 10;
+
+        -- 랭킹파일 리스트
+        select b.original_name as imageUrl
+        from tb_place a, tb_file b
+        where a.id = b.tb_place_id
+        and a.id = 1;
+        ```
       parameters:
         - name: businessGubun
           in: query
@@ -1015,8 +1072,6 @@ paths:
                       $ref: '#/components/schemas/placeId'
                     placeName:
                       $ref: '#/components/schemas/placeNam'
-                    period:
-                      $ref: '#/components/schemas/period'
                     ranking:
                       $ref: '#/components/schemas/ranking'
                     blogReviewCount:
@@ -1025,6 +1080,10 @@ paths:
                       $ref: '#/components/schemas/visitorReviewCount'
                     distance:
                       $ref: '#/components/schemas/distance'
+                    allYearRoundYn:
+                      $ref: '#/components/schemas/allYearRoundYn'
+                    streetNameAddress:
+                      $ref: '#/components/schemas/streetNameAddress'
                     openYn:
                       $ref: '#/components/schemas/openYn'
                     openTime:
@@ -1347,6 +1406,12 @@ components:
       enum:
         - 'y'
         - 'n'
+    allYearRoundYn:
+      type: string
+      description: 연중무휴 여부
+      enum:
+        - 'y'
+        - 'n'
     blogReviewCount:
       type: integer
       description: 블로그 리뷰수
@@ -1556,6 +1621,9 @@ components:
       type: integer
       description: 페이지 크기
       example: 4
+    streetNameAddress:
+      type: string
+      description: 주소
     termsId:
       type: integer
       example: 3
