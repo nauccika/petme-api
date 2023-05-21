@@ -1,6 +1,21 @@
 get:
   summary: 이메일주소 찾기
-  description: 기획서 15p 이메일주소 찾기 클릭시
+  tags:
+    - 이메일주소 찾기/비밀번호 찾기(14p)
+  description: |
+    기획서 15p 이메일주소 찾기 클릭시
+    ```
+      -- otp 검증
+      SELECT otp
+        FROM tb_otp
+       WHERE phone = '01012341234'
+         AND otp = '123456'
+         AND expiration_time > NOW();
+      -- email 조회
+      SELECT email 
+        FROM tb_user 
+       WHERE phone = '01012341234';
+    ```
   parameters:
     - name: phone
       in: query

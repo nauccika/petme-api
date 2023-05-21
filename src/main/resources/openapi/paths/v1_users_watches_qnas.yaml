@@ -1,4 +1,6 @@
 get:
+  tags:
+    - 마이-찜(50p)
   summary: 마이찜-Q&A
   description: 52p 마이-찜-펫 연구소 Q&A
   security:
@@ -26,7 +28,7 @@ get:
             items:
               type: object
               properties:
-                qnaId:
+                qna_id:
                   $ref: '../schemas/qnaId.yaml'
                 category:
                   $ref: '../schemas/category.yaml'
@@ -34,11 +36,11 @@ get:
                   $ref: '../schemas/title.yaml'
                 writer:
                   $ref: '../schemas/writer.yaml'
-                writerName:
+                writer_name:
                   $ref: '../schemas/writerName.yaml'
-                readCount:
+                read_count:
                   $ref: '../schemas/readCount.yaml'
-                registerTime:
+                register_time:
                   $ref: '../schemas/registerTime.yaml'
     default:
       description: Error

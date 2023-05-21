@@ -1,34 +1,67 @@
 get:
-  summary: 베스트 리뷰 목록
+  tags:
+    - 통합메인(61p)
+  summary: 메인-베스트 리뷰 목록
+  description: | 
+    62p 베스트 리뷰
+    ```
+      SELECT
+          X.place_id,
+          X.ranking,
+          X.writer,
+          X.register_time,
+          X.place_name,
+          X.content,
+          X.image_url
+      FROM
+      (
+        SELECT       
+            a.id AS place_id,
+            a.ranking,
+            b.writer,
+            b.register_time,
+            b.content,
+            TRIM(a.NAME) AS place_name, 
+            if (a.id NOT IN(SELECT bb.id FROM tb_file aa, tb_place bb WHERE bb.id = aa.tb_place_id), '',
+              (SELECT 
+                  CONCAT('http://', (SELECT z.ip1 FROM tb_server z, tb_file y WHERE z.id = y.tb_server_id AND y.tb_place_id = a.id), full_path, '/', save_name) 
+              FROM tb_file WHERE tb_place_id = a.id)) AS image_url
+        FROM 
+            tb_place AS a,
+            tb_review AS b,
+            (SELECT @rest_meter := 0) AS c,
+            (SELECT @input_longitude := 127.027528) AS d,
+            (SELECT @input_latitude := 37.497637) AS e
+        WHERE 
+            -- (a.business_gubun = '동물병원' AND a.street_name_address like '서울 강남구%') AND
+            ST_Distance_Sphere(POINT(a.longitude, a.latitude), POINT(@input_longitude, @input_latitude)) <= 2000	
+            AND a.id = b.tb_place_id
+        ORDER BY a.blog_review_count DESC
+      ) X LIMIT 4 OFFSET 0;
+    ```
   parameters:
-    - name: businessGubun
+    - name: business_gubun
       in: query
       required: true
       description: 장소 구분
       schema:
         $ref: '../schemas/businessGubun.yaml'
-    - name: zipcode
-      in: query
-      required: false
-      description: 값이 null인 경우는 위도, 경도로 내 주변 검색
-      schema:
-        $ref: '../schemas/zipcode.yaml'
-    - name: latitude
+    - name: sido
       in: query
       required: true
-      description: 위도 좌표
+      description: 시도
       schema:
-        $ref: '../schemas/latitude.yaml'
-    - name: longitude
+        $ref: '../schemas/sido.yaml'
+    - name: sigungu
       in: query
       required: true
-      description: 경도 좌표
+      description: 시군구
       schema:
-        $ref: '../schemas/longitude.yaml'
+        $ref: '../schemas/sigungu.yaml'
     - name: page
       in: query
       required: true
-      description: 페이지 번호
+      description: 페이지 번호(0부터 시작)
       schema:
         $ref: '../schemas/page.yaml'
     - name: size
@@ -48,20 +81,18 @@ get:
               type: object
               description: 리뷰
               properties:
-                grade:
-                  $ref: '../schemas/grade.yaml'
-                registerTime:
+                ranking:
+                  $ref: '../schemas/ranking.yaml'
+                register_time:
                   $ref: '../schemas/registerTime.yaml'
                 writer:
                   $ref: '../schemas/writer.yaml'
                 content:
                   $ref: '../schemas/content.yaml'
-                placeName:
+                place_name:
                   $ref: '../schemas/placeName.yaml'
-                imageUrl:
-                  type: array
-                  items:
-                    $ref: '../schemas/imageUrl.yaml'
+                image_url:
+                  $ref: '../schemas/imageUrl.yaml'
     default:
       description: Error
       content:

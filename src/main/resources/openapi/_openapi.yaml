@@ -7,68 +7,120 @@ servers:
 paths:
   /v1/login: #로그인
     $ref: './paths/v1_login.yaml'
+
   /v1/emails/check: #이메일 중복 확인
     $ref: './paths/v1_emails_check.yaml'
+
+  /v1/users/logout: #로그아웃
+    $ref: './paths/v1_users_logout.yaml'
+
   /v1/users: #내정보 조회, 회원가입
     $ref: './paths/v1_users.yaml'
+
   /v1/opts: #인증번호 전송
     $ref: './paths/v1_otps.yaml'
+
   /v1/emails: #이메일주소 찾기
     $ref: './paths/v1_emails.yaml'
+
   /v1/passwords: #비밀번호 찾기, 재설정
     $ref: './paths/v1_passwords.yaml'
-  /v1/terms: #약관 목록 조회
-    $ref: './paths/v1_terms.yaml'
-  /v1/users/name: #내정보 수정
+
+  # /v1/terms: #약관 목록 조회
+    # $ref: './paths/v1_terms.yaml'
+
+  /v1/users/name: #내정보 수정-이름
     $ref: './paths/v1_users_name.yaml'
-  /v1/users/password: #비밀번호 수정
+
+  /v1/users/password: #내정보 수정-비밀번호
     $ref: './paths/v1_users_password.yaml'
-  /v1/users/phone: #휴대폰번호 변경
+
+  /v1/users/phone: #내정보 수정-휴대폰번호
     $ref: './paths/v1_users_phone.yaml'
+
+  /v1/users/notification: #내정보-알림
+    $ref: './paths/v1_users_notification.yaml'
+
   /v1/users/withdrawal: #회원 탈퇴
     $ref: './paths/v1_users_withdrawal.yaml'
+
   /v1/users/reviews: #내 리뷰 목록
     $ref: './paths/v1_users_reviews.yaml'
-  /v1/users/reviews/{reviewId}: #내 리뷰 삭제
+
+  /v1/users/reviews/{review_id}: #내 리뷰 삭제
     $ref: './paths/v1_users_reviews_reviewId.yaml'
+
   /v1/users/points: #포인트 사용내역
     $ref: './paths/v1_users_points.yaml'
+
   /v1/users/watches/places: #내가 찜한 장소
     $ref: './paths/v1_users_watches_places.yaml'
+
   /v1/users/watches/contents: #내가 찜한 콘텐츠
     $ref: './paths/v1_users_watches_contents.yaml'
+
   /v1/users/watches/qnas: #내가 찜한 Q&A
     $ref: './paths/v1_users_watches_qnas.yaml'
-  /v1/users/watches/{watchId}: #내 찜 삭제
+
+  /v1/users/watches/{watch_id}: #내 찜 삭제
     $ref: './paths/v1_users_watches_watchId.yaml'
+
   /v1/users/qnas: #내가 작성한 Q&A 목록
     $ref: './paths/v1_users_qnas.yaml'
+
   /v1/users/qnas/comments: #내가 작성한 Q&A 댓글
     $ref: './paths/v1_users_qnas_comments.yaml'
+
   /v1/users/news: #내 이벤트 목록
     $ref: './paths/v1_users_news.yaml'
-  /v1/events/{eventId}: #이벤트 상세
+
+  /v1/events/{event_id}: #이벤트 상세
     $ref: './paths/v1_events_eventId.yaml'
-  /v1/notices/{noticeId}: #공지 상세
+
+  /v1/notices/{notice_id}: #공지 상세
     $ref: './paths/v1_notices_noticeId.yaml'
+
   /v1/reviews/count: #메인-누적 리뷰
     $ref: './paths/v1_reviews_count.yaml'
+
   /v1/rankings/categories: #랭킹 카테고리 목록
     $ref: './paths/v1_rankings_categories.yaml'
-  /v1/rankings: #내주변 랭킹
+
+  /v1/rankings: #메인-내주변 랭킹
     $ref: './paths/v1_rankings.yaml'
+
+  /v2/rankings: #랭킹-목록
+    $ref: './paths/v2_rankings.yaml'
+
   /v1/reviews: #메인-베스트 리뷰
     $ref: './paths/v1_reviews.yaml'
-  /v1/reviews/{reviewId}:
-    $ref: './paths/v1_reviews_reviewId.yaml'
-  /v1/places/histories: #최근 본 장소
-    $ref: './paths/v1_places_histories.yaml'
-  /v1/places/histories/{placeId}: #최근 본 장소 삭제
-    $ref: './paths/v1_places_histories_placeId.yaml'
-  /v1/places/recommends: #고객 추천 장소
-    $ref: './paths/v1_places_recommends.yaml'
-  /v1/notices:
-    $ref: './paths/v1_notices.yaml'
+
+  /v2/reviews: #리뷰-리뷰 목록
+    $ref: './paths/v2_reviews.yaml'
+
+  /v1/recommends: #메인-추천 목록
+    $ref: './paths/v1_recommends.yaml'
+
+  /v1/pet-contents: #팻미 연구소 콘텐츠 목록
+    $ref: './paths/v1_pet_contents.yaml'
+
+  /v1/places/{place_id}: #장소 상세
+    $ref: './paths/v1_places_place_id.yaml'
+
+  # /v1/reviews/{review_id}:
+    # $ref: './paths/v1_reviews_reviewId.yaml'
+  # /v1/places/histories: #최근 본 장소
+    # $ref: './paths/v1_places_histories.yaml'
+  # /v1/places/histories/{place_id}: #최근 본 장소 삭제
+    # $ref: './paths/v1_places_histories_placeId.yaml'
+  # /v1/places/recommends: #고객 추천 장소
+    # $ref: './paths/v1_places_recommends.yaml'
+  # /v1/notices:
+    # $ref: './paths/v1_notices.yaml'
+  
+  /v1/devices: #기타-디바이스 추가
+    $ref: './paths/v1_devices.yaml'
+
 components:
   securitySchemes:
     bearerAuth:

@@ -1,10 +1,12 @@
 delete:
+  tags:
+    - 마이-리뷰(43p)
   summary: 리뷰 삭제
   description: 44p 마이-리뷰 삭제
   security:
     - bearerAuth: [ ]
   parameters:
-    - name: reviewId
+    - name: review_id
       in: path
       required: true
       description: 리뷰 아이디

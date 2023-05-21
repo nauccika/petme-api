@@ -1,0 +1,35 @@
+post:
+  tags:
+    - 기타
+  summary: 디바이스 추가
+  description: |
+    앱 실행 후 uuid를 통해 디바이스 정보를 추가한다. ip, mac_address는 저장할 필요가 없다고 판단한다.<br>
+    uuid가 이미 존재하면 modify_time을 수정한다.<br>
+    사용자가 로그인을 수행하면 tb_user_id, modify_time을 수정한다.<br>
+    <a href='https://developer.android.com/training/articles/user-data-ids?hl=ko' target='_blank'>안드로이드 uuid 정책</a><br>
+    <a href='https://www.hooni.net/xe/study/2273' target='_blank'>ios uuid 정책</a><br>
+    ```
+    INSERT INTO tb_device(`uuid`, os, ip, mac_address, modify_time, register_time)
+    VALUES('941780cc-5a53-4455-9cf7-835ff2bbbe1a', 'Android 4.4.2', NULL, NULL, now(), now());
+    ```
+  security:
+    - bearerAuth: [ ]
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            uuid:
+              $ref: '../schemas/uuid.yaml'
+            os:
+              $ref: '../schemas/os.yaml'
+  responses:
+    "200":
+      description: 성공
+    default:
+      description: Error
+      content:
+        application/json:
+          schema:
+            $ref: '../schemas/error.yaml'

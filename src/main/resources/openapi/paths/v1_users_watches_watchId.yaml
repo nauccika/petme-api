@@ -1,10 +1,12 @@
 delete:
+  tags:
+    - 마이-찜(50p)
   summary: 찜 삭제
   description: 52p 마이-찜-삭제
   security:
     - bearerAuth: [ ]
   parameters:
-    - name: watchId
+    - name: watch_id
       in: path
       required: true
       description: 찜 아이디

@@ -15,14 +15,14 @@ get:
               required:
                 - title
                 - content
-                - requiredYn
+                - required_yn
                 - order
               properties:
                 title:
                   $ref: '../schemas/title.yaml'
                 content:
                   $ref: '../schemas/content.yaml'
-                requiredYn:
+                required_yn:
                   $ref: '../schemas/requiredYn.yaml'
                 order:
                   $ref: '../schemas/order.yaml'

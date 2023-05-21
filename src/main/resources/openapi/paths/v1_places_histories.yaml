@@ -23,7 +23,7 @@ get:
             items:
               type: object
               properties:
-                placeName:
+                place_name:
                   $ref: '../schemas/placeName.yaml'
                 sido:
                   $ref: '../schemas/sido.yaml'

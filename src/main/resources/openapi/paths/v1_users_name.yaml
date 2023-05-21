@@ -1,6 +1,14 @@
 put:
-  summary: 내정보 수정
-  description: 37p 닉네임 수정
+  tags:
+    - 마이-내정보수정(35p)
+  summary: 내정보 수정-이름
+  description: |
+    37p 닉네임 수정
+    ```
+      UPDATE tb_user
+         SET user_name = '아소카'
+       WHERE id = 39;
+    ```
   security:
     - bearerAuth: [ ]
   requestBody:
@@ -10,7 +18,7 @@ put:
         schema:
           type: object
           properties:
-            userName:
+            user_name:
               $ref: '../schemas/userName.yaml'
           required:
             - userName

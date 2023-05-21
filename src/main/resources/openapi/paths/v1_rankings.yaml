@@ -1,64 +1,63 @@
 get:
-  summary: 랭킹 목록
+  tags:
+    - 통합메인(61p)
+  summary: 메인-랭킹 목록
   description: |
     62p 메인-내주변 랭킹
     ```
-    -- 랭킹리스트
-    select
-    a.id as placeId,
-    a.name as placeName,
-    a.ranking,
-    a.blog_review_count as blogReviewCount,
-    a.visitor_review_count as visitorReviewCount,
-    round(ST_Distance_Sphere(ST_GeomFromText('POINT(127.027528 37.497637)'), POINT(longitude, latitude)), 0) as distance,
-    b.all_year_round_yn as allYearRoundYn,
-    a.street_name_address as streetNameAddress,
-    a.blog_review_count as blogReviewCount,
-    fn_open_yn(a.id) as openYn,
-    fn_open_time(a.id) as openTime
-    from tb_place a
-    left outer join tb_place_business_hours b on a.id = b.tb_place_id
-    where zipcode >= (select min(zipcode) from tb_zipcode where sido = '서울특별시' and sigungu = '강남구')
-    and zipcode <= (select max(zipcode) from tb_zipcode where sido = '서울특별시' and sigungu = '강남구')
-    limit 0, 10;
-    
-    -- 랭킹파일 리스트
-    select b.original_name as imageUrl
-    from tb_place a, tb_file b
-    where a.id = b.tb_place_id
-    and a.id = 1;
+      SELECT 
+        (@rownum := @rownum + 1) AS number, 
+        COUNT(*) OVER() AS total_count, 
+        X.place_id,
+        X.ranking, 
+        X.total_review_count, 
+        X.distance,
+        X.place_name, 
+        X.image_url 
+      FROM
+      (
+        SELECT       
+            a.id AS place_id,
+            (TRIM(a.ranking) + 0) AS ranking,
+            (IFNULL(a.blog_review_count, 0) + IFNULL(a.visitor_review_count, 0)) AS total_review_count,
+            @rest_meter := ROUND(ST_Distance_Sphere(POINT(a.longitude, a.latitude), POINT(@input_longitude, @input_latitude))) '',
+            IF (@rest_meter > 1000, CONCAT(CONVERT(ROUND(@rest_meter/1000, 1), CHAR), 'km'), CONCAT(CONVERT(@rest_meter, CHAR), 'm')) AS distance,
+            TRIM(a.NAME) AS place_name, 
+            if (a.id NOT IN(SELECT bb.id FROM tb_file aa, tb_place bb WHERE bb.id = aa.tb_place_id), '',
+              (SELECT 
+                  CONCAT('http://', (SELECT z.ip1 FROM tb_server z, tb_file y WHERE z.id = y.tb_server_id AND y.tb_place_id = a.id), full_path, '/', save_name) 
+              FROM tb_file WHERE tb_place_id = a.id)) AS image_url
+        FROM 
+            tb_place AS a,
+            (SELECT @rownum := 0) AS b,
+            (SELECT @rest_meter := 0) AS c,
+            (SELECT @input_longitude := 127.027528) AS d,
+            (SELECT @input_latitude := 37.497637) AS e
+        WHERE 
+            -- (a.business_gubun = '동물병원' AND a.street_name_address like '서울 강남구%') OR 
+            ST_Distance_Sphere(POINT(a.longitude, a.latitude), POINT(@input_longitude, @input_latitude)) <= 2000
+        ORDER BY ranking DESC
+      ) X LIMIT 4 OFFSET 0;
     ```
   parameters:
-    - name: businessGubun
+    - name: business_gubun
       in: query
       required: true
       description: 장소 구분
       schema:
         $ref: '../schemas/businessGubun.yaml'
-    - name: zipcode
-      in: query
-      required: false
-      description: 값이 null인 경우는 위도, 경도로 내 주변 검색
-      schema:
-        $ref: '../schemas/zipcode.yaml'
-    - name: rankingOrder
+    - name: sido
       in: query
       required: true
-      description: 기간
+      description: 시도
       schema:
-        $ref: '../schemas/rankingOrder.yaml'
-    - name: weekendOpenYn
+        $ref: '../schemas/sido.yaml'
+    - name: sigungu
       in: query
       required: true
-      description: 주말 진료 여부
+      description: 시군구
       schema:
-        $ref: '../schemas/weekendOpenYn.yaml'
-    - name: allDayOpenYn
-      in: query
-      required: true
-      description: 24시간 진료 여부
-      schema:
-        $ref: '../schemas/allDayOpenYn.yaml'
+        $ref: '../schemas/sigungu.yaml'
     - name: latitude
       in: query
       required: true
@@ -74,7 +73,7 @@ get:
     - name: page
       in: query
       required: true
-      description: 페이지 번호
+      description: 페이지 번호(0부터 시작)
       schema:
         $ref: '../schemas/page.yaml'
     - name: size
@@ -94,30 +93,20 @@ get:
               type: object
               description: 랭킹
               properties:
-                placeId:
+                total_count:
+                  $ref: '../schemas/totalCount.yaml'
+                place_id:
                   $ref: '../schemas/placeId.yaml'
-                placeName:
+                place_name:
                   $ref: '../schemas/placeName.yaml'
                 ranking:
                   $ref: '../schemas/ranking.yaml'
-                blogReviewCount:
-                  $ref: '../schemas/blogReviewCount.yaml'
-                visitorReviewCount:
-                  $ref: '../schemas/visitorReviewCount.yaml'
+                total_review_count:
+                  $ref: '../schemas/totalReviewCount.yaml'
                 distance:
                   $ref: '../schemas/distance.yaml'
-                allYearRoundYn:
-                  $ref: '../schemas/allYearRoundYn.yaml'
-                streetNameAddress:
-                  $ref: '../schemas/streetNameAddress.yaml'
-                openYn:
-                  $ref: '../schemas/openYn.yaml'
-                openTime:
-                  $ref: '../schemas/openTime.yaml'
-                imageUrls:
-                  type: array
-                  items:
-                    $ref: '../schemas/imageUrl.yaml'
+                image_url:
+                  $ref: '../schemas/imageUrl.yaml'
     default:
       description: Error
       content:

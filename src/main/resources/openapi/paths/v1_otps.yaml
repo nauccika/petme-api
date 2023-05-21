@@ -1,8 +1,13 @@
 post:
   summary: 인증번호 전송
-  description: > 
+  tags:
+    - 이메일주소 찾기/비밀번호 찾기(14p)
+  description: |
     휴대폰 인증을 위해 sms로 otp를 발송<br>
-    sms로 otp 발송 후 phone, otp, registerTime, expirationTime 를 저장해야 한다<br>
+    ```
+      INSERT INTO tb_otp(phone, otp, register_time)
+      VALUES ('01012341234', '123456', NOW());
+    ```
   requestBody:
     required: true
     content:

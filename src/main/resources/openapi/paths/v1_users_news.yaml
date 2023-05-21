@@ -1,4 +1,6 @@
 get:
+  tags:
+    - 마이-이벤트/공지사항(56p)
   summary: 마이-이벤트/공지사항
   description: >
     57p 마이-이벤트/공지사항<br>
@@ -32,9 +34,9 @@ get:
                   $ref: '../schemas/eventId.yaml'
                 title:
                   $ref: '../schemas/title.yaml'
-                registerTime:
+                register_time:
                   $ref: '../schemas/registerTime.yaml'
-                imageUrl:
+                image_url:
                   $ref: '../schemas/imageUrl.yaml'
     default:
       description: Error

@@ -1,10 +1,12 @@
 get:
+  tags:
+    - 마이-이벤트/공지사항(56p)
   summary: 공지
   description: 59p 공지 상세
   security:
     - bearerAuth: [ ]
   parameters:
-    - name: noticeId
+    - name: notice_id
       in: path
       required: true
       description: 공지사항 아이디
@@ -22,21 +24,21 @@ get:
                 $ref: '../schemas/title.yaml'
               writer:
                 $ref: '../schemas/writer.yaml'
-              writerName:
+              writer_name:
                 $ref: '../schemas/writerName.yaml'
               content:
                 $ref: '../schemas/content.yaml'
-              htmlYn:
+              html_yn:
                 $ref: '../schemas/htmlYn.yaml'
-              readCount:
+              read_count:
                 $ref: '../schemas/readCount.yaml'
-              registerTime:
+              register_time:
                 $ref: '../schemas/registerTime.yaml'
-              linkUrl:
+              link_url:
                 $ref: '../schemas/linkUrl.yaml'
-              imageUrls:
+              image_urls:
                 $ref: '../schemas/imageUrl.yaml'
-              noticeGubun:
+              notice_gubun:
                 $ref: '../schemas/noticeGubun.yaml'
     default:
       description: Error

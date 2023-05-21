@@ -24,17 +24,17 @@ get:
             items:
               type: object
               properties:
-                noticeId:
+                notice_id:
                   $ref: '../schemas/noticeId.yaml'
                 title:
                   $ref: '../schemas/title.yaml'
-                registerTime:
+                register_time:
                   $ref: '../schemas/registerTime.yaml'
-                linkUrl:
+                link_url:
                   $ref: '../schemas/linkUrl.yaml'
-                imageUrl:
+                image_url:
                   $ref: '../schemas/imageUrl.yaml'
-                noticeGubun:
+                notice_gubun:
                   $ref: '../schemas/noticeGubun.yaml'
     default:
       description: Error

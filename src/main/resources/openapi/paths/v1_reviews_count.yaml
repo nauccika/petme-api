@@ -1,4 +1,6 @@
 get:
+  tags:
+    - 통합메인(61p)
   summary: 누적 리뷰수
   description: 메인 - 누적 리뷰수
   responses:
@@ -9,9 +11,9 @@ get:
           schema:
             type: object
             required:
-              - totalReviewCount
+              - total_review_count
             properties:
-              totalReviewCount:
+              total_review_count:
                 $ref: '../schemas/totalReviewCount.yaml'
     default:
       description: Error

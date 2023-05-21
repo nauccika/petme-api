@@ -1,6 +1,22 @@
 put:
+  tags:
+    - 마이-내정보수정(35p)
   summary: 휴대폰번호 변경
-  description: 39p 휴대폰번호 변경
+  description: |
+    39p 내정보 수정-휴대폰번호
+    ```
+    -- code 검증
+      SELECT otp
+        FROM tb_otp
+        WHERE phone = '01012341234'
+          AND otp = '123456'
+          AND expiration_time > NOW();
+          
+    -- 휴대폰번호 갱신
+    UPDATE tb_user
+       SET phone = '01012341234'
+     WHERE id = 10;
+    ```
   security:
     - bearerAuth: [ ]
   requestBody:

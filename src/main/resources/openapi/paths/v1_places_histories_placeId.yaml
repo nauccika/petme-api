@@ -4,7 +4,7 @@ delete:
   security:
     - bearerAuth: [ ]
   parameters:
-    - name: placeId
+    - name: place_id
       in: path
       required: true
       description: 리뷰 아이디

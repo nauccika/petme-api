@@ -1,6 +1,19 @@
 post:
+  tags:
+    - 마이-내정보수정(35p)
   summary: 회원 탈퇴
-  description: 41p 회원 탈퇴
+  description: |
+    41p 회원 탈퇴<br>
+    회원 탈퇴 처리 후 로그아웃 처리한다<br>
+    ```
+    UPDATE tb_user 
+       SET use_yn = 'n',
+           withdrawal_date = now(),
+           withdrawal_cause = '리뷰가 도움이 되지 않아서',
+           receive_information_yn = 'n',
+           modify_time = now()
+     WHERE id = 39;
+    ```
   security:
     - bearerAuth: [ ]
   requestBody:

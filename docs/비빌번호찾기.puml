@@ -1,0 +1,36 @@
+@startuml
+
+actor user
+participant front
+participant api 
+participant db 
+participant sms 
+
+front->api: 인증번호전송(phone)
+api->db: tb_otp 추가
+db->api: result
+api->sms: sms 발송 요청
+sms->sms: sms 발송
+sms->api: result
+api->front: 200
+user->front: otp입력
+
+front->api: 비밀번호찾기(phone,otp)
+api->db: tb_otp 조회
+db->api: result
+api->api: code 생성
+api->db: tb_otp 추가(phone,code)
+db->api: result
+api->front: 200(code)
+
+front->user: 비밀번호 입력 화면
+user->front: 비밀번호 입력
+
+front->api: 비빌번호 재설정(phone,code,pwd)
+api->db: tb_otp 조회(code)
+db->api: result
+api->db: tb_user 갱신(pwd)
+db->api: result
+api->front: 200
+
+@enduml

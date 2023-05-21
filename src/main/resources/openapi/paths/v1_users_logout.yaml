@@ -1,0 +1,23 @@
+post:
+  summary: 로그아웃
+  tags:
+    - 마이-내정보수정(35p)
+  description: | 
+    36p 로그아웃 링크 클릭시 호출.<br>
+    서버에 로그아웃 이력을 추가하고 쿠키 또는 로컬 스토리지의 인증 토큰을 삭제한다.<br>
+    ```
+    -- 로그아웃 이력
+    INSERT INTO tb_user_login_history(tb_user_id, login_id, login_time, login_ip, access_status)
+    VALUES(39, 'petme@petme.kr', now(), NULL, '로그아웃');
+    ```
+  security:
+    - bearerAuth: [ ]
+  responses:
+    "200":
+      description: 성공
+    default:
+      description: Error
+      content:
+        application/json:
+          schema:
+            $ref: '../schemas/error.yaml'

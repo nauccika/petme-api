@@ -2,7 +2,22 @@ get:
   security:
     - bearerAuth: []
   summary: 내정보 조회
-  description: 28p 내정보 조회
+  tags:
+    - 마이-메인(27p)
+  description: |
+    28p 내정보 조회<br>
+    receive_information_yn 필드는 설정 > 알림 설정에 사용한다<br>
+    ```
+    SELECT 
+      user_name, 
+      email, 
+      current_point, 
+      receive_information_yn,
+      (SELECT count(1) FROM tb_review WHERE tb_user_id = 39) AS review_count,
+      (SELECT count(1) FROM tb_watchlist WHERE tb_user_id = 39) AS watch_count
+    FROM tb_user
+    WHERE id = 39;
+    ```
   responses:
     "200":
       description: 정상
@@ -11,30 +26,43 @@ get:
           schema:
             type: object
             required:
-              - userName
+              - user_name
               - email
-              - reviewCount
-              - point
-              - watchCount
-              - pushOnOff
+              - review_count
+              - current_point
+              - watch_count
+              - receive_information_yn
             properties:
-              userName:
+              user_name:
                 $ref: '../schemas/userName.yaml'
               email:
                 $ref: '../schemas/email.yaml'
-              reviewCount:
+              review_count:
                 $ref: '../schemas/reviewCount.yaml'
-              point:
-                $ref: '../schemas/point.yaml'
-              watchCount:
+              current_point:
+                $ref: '../schemas/currentPoint.yaml'
+              watch_count:
                 $ref: '../schemas/watchCount.yaml'
-              pushOnOff:
-                $ref: '../schemas/pushOnOff.yaml'
+              receive_information_yn:
+                $ref: '../schemas/receiveInformationYn.yaml'
 post:
   summary: 회원 가입
-  description: >
+  tags:
+   - 로그인(9p)
+  description: |
     13p 회원 가입 요청<br>
     sns 로그인을 통한 회원 가입은 어떻게 처리할 것인가?<br>
+    ```
+      -- otp 검증
+      SELECT otp
+        FROM tb_otp
+       WHERE phone = '01012341234'
+         AND otp = '123456'
+         AND expiration_time > NOW();
+      -- 회원가입
+      INSERT INTO tb_user (login_id, email, password, phone, receive_information_yn)
+      VALUES ('test1@test.com', 'test1@test.com', SHA2('password', 256), '01012341234', 'y');
+    ```
   requestBody:
     required: true
     content:
@@ -42,13 +70,13 @@ post:
         schema:
           type: object
           required:
-            - loginId
+            - login_id
             - password
             - phone
             - otp
-            - termsIds
+            - receive_information_yn
           properties:
-            loginId:
+            login_id:
               $ref: '../schemas/loginId.yaml'
             password:
               $ref: '../schemas/password.yaml'
@@ -56,11 +84,8 @@ post:
               $ref: '../schemas/phone.yaml'
             otp:
               $ref: '../schemas/otp.yaml'
-            termsIds:
-              type: array
-              items:
-                example: [1,2,3]
-                $ref: '../schemas/termsId.yaml'
+            receive_information_yn:
+              $ref: '../schemas/receiveInformationYn.yaml'
   responses:
     "201":
       description: 성공

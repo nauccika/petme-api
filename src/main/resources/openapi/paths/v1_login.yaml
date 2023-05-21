@@ -1,6 +1,27 @@
 post:
   summary: 로그인
-  description: 12p 로그인 버튼 클릭시 호출
+  tags:
+   - 로그인(9p)
+  description: | 
+    12p 로그인 버튼 클릭시 호출.<br>
+    sns 로그인의 경우 sns가 돌려준 사용자 식별자를 prefix + login_id, access_token을 password로 넘긴다.<br>
+    예) login_id: kakao_2787125117, password: xjfRbePXz0jujIv9pQufV0YBFpGYpSl0xtYjVq-ZCj10aQAAAYgPJzRP
+    ```
+    -- 로그인
+    SELECT id, login_id, user_name, email  
+      FROM tb_user 
+    WHERE login_id = 'petme@petme.kr' 
+      AND password = SHA2('password', 256);
+    
+    -- 로그인 이력
+    INSERT INTO tb_user_login_history(tb_user_id, login_id, login_time, login_ip, access_status)
+    VALUES(39, 'petme@petme.kr', now(), NULL, '접속중');
+
+    -- 디바이스 정보 수정
+    UPDATE tb_device
+      SET tb_user_id=39, login_id='petme@petme.kr', modify_time=now()
+    WHERE uuid='941780cc-5a53-4455-9cf7-835ff2bbbe1a';
+    ```
   requestBody:
     required: true
     content:
@@ -8,16 +29,16 @@ post:
         schema:
           type: object
           required:
-            - loginId
+            - login_id
             - password
-            - loginType
+            - uuid
           properties:
             loginId:
               $ref: '../schemas/loginId.yaml'
             password:
               $ref: '../schemas/password.yaml'
-            loginType:
-              $ref: '../schemas/loginType.yaml'
+            uuid:
+              $ref: '../schemas/uuid.yaml'
   responses:
     "200":
       description: 성공

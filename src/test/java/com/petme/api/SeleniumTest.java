@@ -42,7 +42,7 @@ public class SeleniumTest {
   @Test
   public void crawlFromNaver() {
 
-    driver.get("https://map.naver.com/v5/search/동물병원");
+    driver.get("https://map.naver.com/v5/search/병원");
     driver.manage().timeouts().implicitlyWait(Duration.ofMillis(1000));
 
     System.out.println("driver = " + driver.getTitle());

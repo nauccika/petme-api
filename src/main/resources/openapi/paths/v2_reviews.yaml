@@ -1,0 +1,70 @@
+get:
+  tags:
+    - 리뷰-메인(79p)
+  summary: 리뷰 목록(작성중)
+  description: | 
+    80p 리뷰 목록
+    ```
+    ```
+  parameters:
+    - name: business_gubun
+      in: query
+      required: true
+      description: 장소 구분
+      schema:
+        $ref: '../schemas/businessGubun.yaml'
+    - name: sido
+      in: query
+      required: true
+      description: 시도
+      schema:
+        $ref: '../schemas/sido.yaml'
+    - name: sigungu
+      in: query
+      required: true
+      description: 시군구
+      schema:
+        $ref: '../schemas/sigungu.yaml'
+    - name: page
+      in: query
+      required: true
+      description: 페이지 번호(0부터 시작)
+      schema:
+        $ref: '../schemas/page.yaml'
+    - name: size
+      in: query
+      required: true
+      description: 페이지 사이즈
+      schema:
+        $ref: '../schemas/size.yaml'
+  responses:
+    '200':
+      description: Ok
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              type: object
+              description: 리뷰
+              properties:
+                grade:
+                  $ref: '../schemas/grade.yaml'
+                register_time:
+                  $ref: '../schemas/registerTime.yaml'
+                writer:
+                  $ref: '../schemas/writer.yaml'
+                content:
+                  $ref: '../schemas/content.yaml'
+                place_name:
+                  $ref: '../schemas/placeName.yaml'
+                image_urls:
+                  type: array
+                  items:
+                    $ref: '../schemas/imageUrl.yaml'
+    default:
+      description: Error
+      content:
+        application/json:
+          schema:
+            $ref: '../schemas/error.yaml'

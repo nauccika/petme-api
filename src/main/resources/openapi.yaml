@@ -8,7 +8,28 @@ paths:
   /v1/login:
     post:
       summary: 로그인
-      description: 12p 로그인 버튼 클릭시 호출
+      tags:
+        - 로그인(9p)
+      description: |
+        12p 로그인 버튼 클릭시 호출.<br>
+        sns 로그인의 경우 sns가 돌려준 사용자 식별자를 prefix + login_id, access_token을 password로 넘긴다.<br>
+        예) login_id: kakao_2787125117, password: xjfRbePXz0jujIv9pQufV0YBFpGYpSl0xtYjVq-ZCj10aQAAAYgPJzRP
+        ```
+        -- 로그인
+        SELECT id, login_id, user_name, email  
+          FROM tb_user 
+        WHERE login_id = 'petme@petme.kr' 
+          AND password = SHA2('password', 256);
+
+        -- 로그인 이력
+        INSERT INTO tb_user_login_history(tb_user_id, login_id, login_time, login_ip, access_status)
+        VALUES(39, 'petme@petme.kr', now(), NULL, '접속중');
+
+        -- 디바이스 정보 수정
+        UPDATE tb_device
+          SET tb_user_id=39, login_id='petme@petme.kr', modify_time=now()
+        WHERE uuid='941780cc-5a53-4455-9cf7-835ff2bbbe1a';
+        ```
       requestBody:
         required: true
         content:
@@ -16,16 +37,16 @@ paths:
             schema:
               type: object
               required:
-                - loginId
+                - login_id
                 - password
-                - loginType
+                - uuid
               properties:
                 loginId:
                   $ref: '#/components/schemas/loginId'
                 password:
                   $ref: '#/components/schemas/password'
-                loginType:
-                  $ref: '#/components/schemas/loginType'
+                uuid:
+                  $ref: '#/components/schemas/uuid'
       responses:
         '200':
           description: 성공
@@ -47,8 +68,16 @@ paths:
   /v1/emails/check:
     get:
       summary: 이메일 중복 확인
+      tags:
+        - 로그인(9p)
       description: |
-        13p 중복확인 클릭시 호출<br> 응답이 200이면 중복, 204인 경우 정상<br>
+        13p 중복확인 클릭시 호출<br>
+        응답이 200이면 중복, 204인 경우 정상<br>
+        ```
+        SELECT COUNT(1)
+          FROM tb_user
+         WHERE email = 'petme@petme.kr';
+        ```
       parameters:
         - name: email
           in: query
@@ -65,12 +94,51 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
+  /v1/users/logout:
+    post:
+      summary: 로그아웃
+      tags:
+        - 마이-내정보수정(35p)
+      description: |
+        36p 로그아웃 링크 클릭시 호출.<br>
+        서버에 로그아웃 이력을 추가하고 쿠키 또는 로컬 스토리지의 인증 토큰을 삭제한다.<br>
+        ```
+        -- 로그아웃 이력
+        INSERT INTO tb_user_login_history(tb_user_id, login_id, login_time, login_ip, access_status)
+        VALUES(39, 'petme@petme.kr', now(), NULL, '로그아웃');
+        ```
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: 성공
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
   /v1/users:
     get:
       security:
         - bearerAuth: []
       summary: 내정보 조회
-      description: 28p 내정보 조회
+      tags:
+        - 마이-메인(27p)
+      description: |
+        28p 내정보 조회<br>
+        receive_information_yn 필드는 설정 > 알림 설정에 사용한다<br>
+        ```
+        SELECT 
+          user_name, 
+          email, 
+          current_point, 
+          receive_information_yn,
+          (SELECT count(1) FROM tb_review WHERE tb_user_id = 39) AS review_count,
+          (SELECT count(1) FROM tb_watchlist WHERE tb_user_id = 39) AS watch_count
+        FROM tb_user
+        WHERE id = 39;
+        ```
       responses:
         '200':
           description: 정상
@@ -79,29 +147,43 @@ paths:
               schema:
                 type: object
                 required:
-                  - userName
+                  - user_name
                   - email
-                  - reviewCount
-                  - point
-                  - watchCount
-                  - pushOnOff
+                  - review_count
+                  - current_point
+                  - watch_count
+                  - receive_information_yn
                 properties:
-                  userName:
+                  user_name:
                     $ref: '#/components/schemas/userName'
                   email:
                     $ref: '#/components/schemas/email'
-                  reviewCount:
+                  review_count:
                     $ref: '#/components/schemas/reviewCount'
-                  point:
-                    $ref: '#/components/schemas/point'
-                  watchCount:
+                  current_point:
+                    $ref: '#/components/schemas/currentPoint'
+                  watch_count:
                     $ref: '#/components/schemas/watchCount'
-                  pushOnOff:
-                    $ref: '#/components/schemas/pushOnOff'
+                  receive_information_yn:
+                    $ref: '#/components/schemas/receiveInformationYn'
     post:
       summary: 회원 가입
+      tags:
+        - 로그인(9p)
       description: |
-        13p 회원 가입 요청<br> sns 로그인을 통한 회원 가입은 어떻게 처리할 것인가?<br>
+        13p 회원 가입 요청<br>
+        sns 로그인을 통한 회원 가입은 어떻게 처리할 것인가?<br>
+        ```
+          -- otp 검증
+          SELECT otp
+            FROM tb_otp
+           WHERE phone = '01012341234'
+             AND otp = '123456'
+             AND expiration_time > NOW();
+          -- 회원가입
+          INSERT INTO tb_user (login_id, email, password, phone, receive_information_yn)
+          VALUES ('test1@test.com', 'test1@test.com', SHA2('password', 256), '01012341234', 'y');
+        ```
       requestBody:
         required: true
         content:
@@ -109,13 +191,13 @@ paths:
             schema:
               type: object
               required:
-                - loginId
+                - login_id
                 - password
                 - phone
                 - otp
-                - termsIds
+                - receive_information_yn
               properties:
-                loginId:
+                login_id:
                   $ref: '#/components/schemas/loginId'
                 password:
                   $ref: '#/components/schemas/password'
@@ -123,14 +205,8 @@ paths:
                   $ref: '#/components/schemas/phone'
                 otp:
                   $ref: '#/components/schemas/otp'
-                termsIds:
-                  type: array
-                  items:
-                    example:
-                      - 1
-                      - 2
-                      - 3
-                    $ref: '#/components/schemas/termsId'
+                receive_information_yn:
+                  $ref: '#/components/schemas/receiveInformationYn'
       responses:
         '201':
           description: 성공
@@ -143,8 +219,14 @@ paths:
   /v1/opts:
     post:
       summary: 인증번호 전송
+      tags:
+        - 이메일주소 찾기/비밀번호 찾기(14p)
       description: |
-        휴대폰 인증을 위해 sms로 otp를 발송<br> sms로 otp 발송 후 phone, otp, registerTime, expirationTime 를 저장해야 한다<br>
+        휴대폰 인증을 위해 sms로 otp를 발송<br>
+        ```
+          INSERT INTO tb_otp(phone, otp, register_time)
+          VALUES ('01012341234', '123456', NOW());
+        ```
       requestBody:
         required: true
         content:
@@ -168,7 +250,22 @@ paths:
   /v1/emails:
     get:
       summary: 이메일주소 찾기
-      description: 기획서 15p 이메일주소 찾기 클릭시
+      tags:
+        - 이메일주소 찾기/비밀번호 찾기(14p)
+      description: |
+        기획서 15p 이메일주소 찾기 클릭시
+        ```
+          -- otp 검증
+          SELECT otp
+            FROM tb_otp
+           WHERE phone = '01012341234'
+             AND otp = '123456'
+             AND expiration_time > NOW();
+          -- email 조회
+          SELECT email 
+            FROM tb_user 
+           WHERE phone = '01012341234';
+        ```
       parameters:
         - name: phone
           in: query
@@ -203,7 +300,18 @@ paths:
   /v1/passwords:
     get:
       summary: 비밀번호 찾기
-      description: 17p 비밀번호 찾기 클릭
+      tags:
+        - 이메일주소 찾기/비밀번호 찾기(14p)
+      description: |
+        17p 비밀번호 찾기 클릭
+        ```
+          -- otp 검증
+          SELECT otp
+            FROM tb_otp
+            WHERE phone = '01012341234'
+              AND otp = '123456'
+              AND expiration_time > NOW();
+        ```
       parameters:
         - name: phone
           in: query
@@ -220,6 +328,15 @@ paths:
       responses:
         '200':
           description: 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    $ref: '#/components/schemas/code'
+                required:
+                  - code
         default:
           description: Error
           content:
@@ -227,8 +344,26 @@ paths:
               schema:
                 $ref: '#/components/schemas/error'
     put:
+      tags:
+        - 이메일주소 찾기/비밀번호 찾기(14p)
       summary: 비밀번호 재설정
-      description: 18p 확인 버튼 클릭
+      description: |
+        18p 확인 버튼 클릭<br>
+        17p 요청값인 phone과 응답으로 받은 code, password를 요청으로 전송한다.
+        ```
+          -- code 검증
+          SELECT otp
+            FROM tb_otp
+            WHERE phone = '01012341234'
+              AND otp = '123456'
+              AND expiration_time > NOW();
+          -- password 재설정
+          UPDATE tb_user
+             SET password = SHA2('password', 256)
+          WHERE phone = '01012341234';
+        ```
+        ## 시퀀스 다이어그램
+        ![diagram](http://101.101.208.77/images/find-password.png)
       requestBody:
         content:
           application/json:
@@ -237,8 +372,8 @@ paths:
               properties:
                 phone:
                   $ref: '#/components/schemas/phone'
-                otp:
-                  $ref: '#/components/schemas/otp'
+                code:
+                  $ref: '#/components/schemas/code'
                 password:
                   $ref: '#/components/schemas/password'
               required:
@@ -254,45 +389,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
-  /v1/terms:
-    get:
-      summary: 약관 목록 조회
-      description: |
-        약관을 DB로 관리하지 않을 경우 필요 없다<br>
-      responses:
-        '200':
-          description: 정상
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-                  description: 약관 내용
-                  required:
-                    - title
-                    - content
-                    - requiredYn
-                    - order
-                  properties:
-                    title:
-                      $ref: '#/components/schemas/title'
-                    content:
-                      $ref: '#/components/schemas/content'
-                    requiredYn:
-                      $ref: '#/components/schemas/requiredYn'
-                    order:
-                      $ref: '#/components/schemas/order'
-        default:
-          description: Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
   /v1/users/name:
     put:
-      summary: 내정보 수정
-      description: 37p 닉네임 수정
+      tags:
+        - 마이-내정보수정(35p)
+      summary: 내정보 수정-이름
+      description: |
+        37p 닉네임 수정
+        ```
+          UPDATE tb_user
+             SET user_name = '아소카'
+           WHERE id = 39;
+        ```
       security:
         - bearerAuth: []
       requestBody:
@@ -302,7 +410,7 @@ paths:
             schema:
               type: object
               properties:
-                userName:
+                user_name:
                   $ref: '#/components/schemas/userName'
               required:
                 - userName
@@ -317,8 +425,17 @@ paths:
                 $ref: '#/components/schemas/error'
   /v1/users/password:
     put:
-      summary: 비밀번호 수정
-      description: 38p 비밀번호 변경
+      tags:
+        - 마이-내정보수정(35p)
+      summary: 내정보 수정-비밀번호 수정
+      description: |
+        38p 비밀번호 변경
+        ```
+          UPDATE tb_user
+            SET password = SHA2('new-password', 256)
+          WHERE id = 39
+            AND password = SHA2('password', 256);
+        ```
       security:
         - bearerAuth: []
       requestBody:
@@ -329,11 +446,11 @@ paths:
               properties:
                 password:
                   $ref: '#/components/schemas/password'
-                newPassword:
+                new_password:
                   $ref: '#/components/schemas/newPassword'
               required:
                 - password
-                - newPassword
+                - new_password
       responses:
         '200':
           description: 성공
@@ -345,8 +462,24 @@ paths:
                 $ref: '#/components/schemas/error'
   /v1/users/phone:
     put:
+      tags:
+        - 마이-내정보수정(35p)
       summary: 휴대폰번호 변경
-      description: 39p 휴대폰번호 변경
+      description: |
+        39p 내정보 수정-휴대폰번호
+        ```
+        -- code 검증
+          SELECT otp
+            FROM tb_otp
+            WHERE phone = '01012341234'
+              AND otp = '123456'
+              AND expiration_time > NOW();
+              
+        -- 휴대폰번호 갱신
+        UPDATE tb_user
+           SET phone = '01012341234'
+         WHERE id = 10;
+        ```
       security:
         - bearerAuth: []
       requestBody:
@@ -371,10 +504,58 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
+  /v1/users/notification:
+    put:
+      tags:
+        - 마이-설정(31p)
+      summary: 내정보 설정
+      description: |
+        32p 내정보 수정-알림
+        ```
+        -- 알림 수정
+        UPDATE tb_user
+           SET receive_information_yn = 'n'
+         WHERE id = 10;
+        ```
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                receive_information_yn:
+                  $ref: '#/components/schemas/receiveInformationYn'
+              required:
+                - phone
+                - otp
+      responses:
+        '200':
+          description: 성공
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
   /v1/users/withdrawal:
     post:
+      tags:
+        - 마이-내정보수정(35p)
       summary: 회원 탈퇴
-      description: 41p 회원 탈퇴
+      description: |
+        41p 회원 탈퇴<br>
+        회원 탈퇴 처리 후 로그아웃 처리한다<br>
+        ```
+        UPDATE tb_user 
+           SET use_yn = 'n',
+               withdrawal_date = now(),
+               withdrawal_cause = '리뷰가 도움이 되지 않아서',
+               receive_information_yn = 'n',
+               modify_time = now()
+         WHERE id = 39;
+        ```
       security:
         - bearerAuth: []
       requestBody:
@@ -396,6 +577,8 @@ paths:
                 $ref: '#/components/schemas/error'
   /v1/users/reviews:
     get:
+      tags:
+        - 마이-리뷰(43p)
       summary: 내 리뷰 목록
       description: 44p 마이-리뷰
       security:
@@ -423,27 +606,27 @@ paths:
                 items:
                   type: object
                   properties:
-                    reviewId:
+                    review_id:
                       $ref: '#/components/schemas/reviewId'
                     grade:
                       $ref: '#/components/schemas/grade'
-                    placeName:
+                    place_name:
                       $ref: '#/components/schemas/placeNam'
-                    registerTime:
+                    register_time:
                       $ref: '#/components/schemas/registerTime'
                     keyword:
                       $ref: '#/components/schemas/keyword'
                     content:
                       $ref: '#/components/schemas/content'
-                    imageUrls:
+                    image_urls:
                       type: array
                       items:
                         $ref: '#/components/schemas/imageUrl'
                   required:
-                    - reviewId
+                    - review_id
                     - grade
-                    - placeName
-                    - registerTime
+                    - place_name
+                    - register_time
                     - keyword
                     - content
         default:
@@ -452,14 +635,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
-  '/v1/users/reviews/{reviewId}':
+  '/v1/users/reviews/{review_id}':
     delete:
+      tags:
+        - 마이-리뷰(43p)
       summary: 리뷰 삭제
       description: 44p 마이-리뷰 삭제
       security:
         - bearerAuth: []
       parameters:
-        - name: reviewId
+        - name: review_id
           in: path
           required: true
           description: 리뷰 아이디
@@ -476,6 +661,8 @@ paths:
                 $ref: '#/components/schemas/error'
   /v1/users/points:
     get:
+      tags:
+        - 마이-포인트(46p)
       summary: 포인트 사용 내역
       description: 47p 마이-포인트
       security:
@@ -488,8 +675,8 @@ paths:
               schema:
                 type: object
                 required:
-                  - currentPoint
-                  - pointHistories
+                  - current_point
+                  - point_histories
                 properties:
                   currentPoint:
                     $ref: '#/components/schemas/currentPoint'
@@ -510,6 +697,8 @@ paths:
                 $ref: '#/components/schemas/error'
   /v1/users/watches/places:
     get:
+      tags:
+        - 마이-찜(50p)
       summary: 마이찜-장소
       description: 52p 마이-찜-장소
       security:
@@ -537,17 +726,17 @@ paths:
                 items:
                   type: object
                   properties:
-                    placeId:
+                    place_id:
                       $ref: '#/components/schemas/placeId'
-                    placeName:
+                    place_name:
                       $ref: '#/components/schemas/placeNam'
                     period:
                       $ref: '#/components/schemas/period'
                     ranking:
                       $ref: '#/components/schemas/ranking'
-                    blogReviewCount:
+                    blog_review_count:
                       $ref: '#/components/schemas/blogReviewCount'
-                    visitorReviewCount:
+                    visitor_review_count:
                       $ref: '#/components/schemas/visitorReviewCount'
                     distance:
                       $ref: '#/components/schemas/distance'
@@ -555,7 +744,7 @@ paths:
                       $ref: '#/components/schemas/openYn'
                     openTime:
                       $ref: '#/components/schemas/openTime'
-                    imageUrls:
+                    image_urls:
                       type: array
                       items:
                         $ref: '#/components/schemas/imageUrl'
@@ -567,6 +756,8 @@ paths:
                 $ref: '#/components/schemas/error'
   /v1/users/watches/contents:
     get:
+      tags:
+        - 마이-찜(50p)
       summary: 마이찜-콘텐츠
       description: 52p 마이-찜-콘텐츠
       security:
@@ -594,7 +785,7 @@ paths:
                 items:
                   type: object
                   properties:
-                    raboratoryId:
+                    raboratory_id:
                       $ref: '#/components/schemas/raboratoryId'
                     category:
                       $ref: '#/components/schemas/category'
@@ -610,6 +801,8 @@ paths:
                 $ref: '#/components/schemas/error'
   /v1/users/watches/qnas:
     get:
+      tags:
+        - 마이-찜(50p)
       summary: 마이찜-Q&A
       description: 52p 마이-찜-펫 연구소 Q&A
       security:
@@ -637,7 +830,7 @@ paths:
                 items:
                   type: object
                   properties:
-                    qnaId:
+                    qna_id:
                       $ref: '#/components/schemas/qnaId'
                     category:
                       $ref: '#/components/schemas/category'
@@ -645,11 +838,11 @@ paths:
                       $ref: '#/components/schemas/title'
                     writer:
                       $ref: '#/components/schemas/writer'
-                    writerName:
+                    writer_name:
                       $ref: '#/components/schemas/writerName'
-                    readCount:
+                    read_count:
                       $ref: '#/components/schemas/readCount'
-                    registerTime:
+                    register_time:
                       $ref: '#/components/schemas/registerTime'
         default:
           description: Error
@@ -657,14 +850,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
-  '/v1/users/watches/{watchId}':
+  '/v1/users/watches/{watch_id}':
     delete:
+      tags:
+        - 마이-찜(50p)
       summary: 찜 삭제
       description: 52p 마이-찜-삭제
       security:
         - bearerAuth: []
       parameters:
-        - name: watchId
+        - name: watch_id
           in: path
           required: true
           description: 찜 아이디
@@ -681,6 +876,8 @@ paths:
                 $ref: '#/components/schemas/error'
   /v1/users/qnas:
     get:
+      tags:
+        - 펫연구소 작성글/댓글(53p)
       summary: 펫 연구소 Q&A 작성글
       description: 55p 마이-펫 연구소 작성글
       security:
@@ -711,9 +908,9 @@ paths:
                     - category
                     - title
                     - writer
-                    - writeTime
-                    - commentCount
-                    - imageUrl
+                    - write_time
+                    - comment_count
+                    - image_url
                   properties:
                     category:
                       $ref: '#/components/schemas/category'
@@ -721,12 +918,12 @@ paths:
                       $ref: '#/components/schemas/title'
                     writer:
                       $ref: '#/components/schemas/writer'
-                    writeTime:
+                    write_time:
                       $ref: '#/components/schemas/writeTime'
-                    commentCount:
+                    comment_count:
                       type: integer
                       description: 댓글 수
-                    imageUrl:
+                    image_url:
                       $ref: '#/components/schemas/imageUrl'
         default:
           description: Error
@@ -736,6 +933,8 @@ paths:
                 $ref: '#/components/schemas/error'
   /v1/users/qnas/comments:
     get:
+      tags:
+        - 펫연구소 작성글/댓글(53p)
       summary: 펫 연구소 Q&A 댓글
       description: 55p 마이-펫연구소 작성 댓글
       security:
@@ -765,16 +964,16 @@ paths:
                   required:
                     - title
                     - content
-                    - writeTime
-                    - imageUrl
+                    - write_time
+                    - image_url
                   properties:
                     title:
                       $ref: '#/components/schemas/title'
                     content:
                       $ref: '#/components/schemas/content'
-                    writeTime:
+                    write_time:
                       $ref: '#/components/schemas/writeTime'
-                    imageUrl:
+                    image_url:
                       $ref: '#/components/schemas/imageUrl'
         default:
           description: Error
@@ -784,6 +983,8 @@ paths:
                 $ref: '#/components/schemas/error'
   /v1/users/news:
     get:
+      tags:
+        - 마이-이벤트/공지사항(56p)
       summary: 마이-이벤트/공지사항
       description: |
         57p 마이-이벤트/공지사항<br> 응답 필드 미정
@@ -816,9 +1017,9 @@ paths:
                       $ref: '#/components/schemas/eventId'
                     title:
                       $ref: '#/components/schemas/title'
-                    registerTime:
+                    register_time:
                       $ref: '#/components/schemas/registerTime'
-                    imageUrl:
+                    image_url:
                       $ref: '#/components/schemas/imageUrl'
         default:
           description: Error
@@ -826,14 +1027,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
-  '/v1/events/{eventId}':
+  '/v1/events/{event_id}':
     get:
+      tags:
+        - 마이-이벤트/공지사항(56p)
       summary: 이벤트 상세
       description: 58p 이벤트 상세
       security:
         - bearerAuth: []
       parameters:
-        - name: eventId
+        - name: event_id
           in: path
           required: true
           description: 이벤트 아이디
@@ -849,21 +1052,21 @@ paths:
                 required:
                   - title
                   - content
-                  - eventStartDate
-                  - eventEndDate
-                  - imageUrl
+                  - event_start_date
+                  - event_end_date
+                  - image_url
                 properties:
                   title:
                     $ref: '#/components/schemas/title'
                   content:
                     $ref: '#/components/schemas/content'
-                  eventStartDate:
+                  event_start_date:
                     $ref: '#/components/schemas/eventStartDate'
-                  eventEndDate:
+                  event_end_date:
                     $ref: '#/components/schemas/eventEndDate'
-                  imageUrl:
+                  image_url:
                     $ref: '#/components/schemas/imageUrl'
-                  linkUrl:
+                  link_url:
                     $ref: '#/components/schemas/linkUrl'
         default:
           description: Error
@@ -871,14 +1074,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
-  '/v1/notices/{noticeId}':
+  '/v1/notices/{notice_id}':
     get:
+      tags:
+        - 마이-이벤트/공지사항(56p)
       summary: 공지
       description: 59p 공지 상세
       security:
         - bearerAuth: []
       parameters:
-        - name: noticeId
+        - name: notice_id
           in: path
           required: true
           description: 공지사항 아이디
@@ -896,21 +1101,21 @@ paths:
                     $ref: '#/components/schemas/title'
                   writer:
                     $ref: '#/components/schemas/writer'
-                  writerName:
+                  writer_name:
                     $ref: '#/components/schemas/writerName'
                   content:
                     $ref: '#/components/schemas/content'
-                  htmlYn:
+                  html_yn:
                     $ref: '#/components/schemas/htmlYn'
-                  readCount:
+                  read_count:
                     $ref: '#/components/schemas/readCount'
-                  registerTime:
+                  register_time:
                     $ref: '#/components/schemas/registerTime'
-                  linkUrl:
+                  link_url:
                     $ref: '#/components/schemas/linkUrl'
-                  imageUrls:
+                  image_urls:
                     $ref: '#/components/schemas/imageUrl'
-                  noticeGubun:
+                  notice_gubun:
                     $ref: '#/components/schemas/noticeGubun'
         default:
           description: Error
@@ -920,6 +1125,8 @@ paths:
                 $ref: '#/components/schemas/error'
   /v1/reviews/count:
     get:
+      tags:
+        - 통합메인(61p)
       summary: 누적 리뷰수
       description: 메인 - 누적 리뷰수
       responses:
@@ -930,9 +1137,9 @@ paths:
               schema:
                 type: object
                 required:
-                  - totalReviewCount
+                  - total_review_count
                 properties:
-                  totalReviewCount:
+                  total_review_count:
                     $ref: '#/components/schemas/totalReviewCount'
         default:
           description: Error
@@ -942,6 +1149,8 @@ paths:
                 $ref: '#/components/schemas/error'
   /v1/rankings/categories:
     get:
+      tags:
+        - 통합메인(61p)
       summary: 랭킹 카테고리 목록
       description: |
         62p 메인-랭킹 카테고리
@@ -963,7 +1172,7 @@ paths:
                   properties:
                     title:
                       $ref: '#/components/schemas/title'
-                    imageUrl:
+                    image_url:
                       $ref: '#/components/schemas/imageUrl'
         default:
           description: Error
@@ -973,66 +1182,172 @@ paths:
                 $ref: '#/components/schemas/error'
   /v1/rankings:
     get:
-      summary: 랭킹 목록
+      tags:
+        - 통합메인(61p)
+      summary: 메인-랭킹 목록
       description: |
         62p 메인-내주변 랭킹
         ```
-        -- 랭킹리스트
-        select
-        a.id as placeId,
-        a.name as placeName,
-        a.ranking,
-        a.blog_review_count as blogReviewCount,
-        a.visitor_review_count as visitorReviewCount,
-        round(ST_Distance_Sphere(ST_GeomFromText('POINT(127.027528 37.497637)'), POINT(longitude, latitude)), 0) as distance,
-        b.all_year_round_yn as allYearRoundYn,
-        a.street_name_address as streetNameAddress,
-        a.blog_review_count as blogReviewCount,
-        fn_open_yn(a.id) as openYn,
-        fn_open_time(a.id) as openTime
-        from tb_place a
-        left outer join tb_place_business_hours b on a.id = b.tb_place_id
-        where zipcode >= (select min(zipcode) from tb_zipcode where sido = '서울특별시' and sigungu = '강남구')
-        and zipcode <= (select max(zipcode) from tb_zipcode where sido = '서울특별시' and sigungu = '강남구')
-        limit 0, 10;
-
-        -- 랭킹파일 리스트
-        select b.original_name as imageUrl
-        from tb_place a, tb_file b
-        where a.id = b.tb_place_id
-        and a.id = 1;
+          SELECT 
+            (@rownum := @rownum + 1) AS number, 
+            COUNT(*) OVER() AS total_count, 
+            X.place_id,
+            X.ranking, 
+            X.total_review_count, 
+            X.distance,
+            X.place_name, 
+            X.image_url 
+          FROM
+          (
+            SELECT       
+                a.id AS place_id,
+                (TRIM(a.ranking) + 0) AS ranking,
+                (IFNULL(a.blog_review_count, 0) + IFNULL(a.visitor_review_count, 0)) AS total_review_count,
+                @rest_meter := ROUND(ST_Distance_Sphere(POINT(a.longitude, a.latitude), POINT(@input_longitude, @input_latitude))) '',
+                IF (@rest_meter > 1000, CONCAT(CONVERT(ROUND(@rest_meter/1000, 1), CHAR), 'km'), CONCAT(CONVERT(@rest_meter, CHAR), 'm')) AS distance,
+                TRIM(a.NAME) AS place_name, 
+                if (a.id NOT IN(SELECT bb.id FROM tb_file aa, tb_place bb WHERE bb.id = aa.tb_place_id), '',
+                  (SELECT 
+                      CONCAT('http://', (SELECT z.ip1 FROM tb_server z, tb_file y WHERE z.id = y.tb_server_id AND y.tb_place_id = a.id), full_path, '/', save_name) 
+                  FROM tb_file WHERE tb_place_id = a.id)) AS image_url
+            FROM 
+                tb_place AS a,
+                (SELECT @rownum := 0) AS b,
+                (SELECT @rest_meter := 0) AS c,
+                (SELECT @input_longitude := 127.027528) AS d,
+                (SELECT @input_latitude := 37.497637) AS e
+            WHERE 
+                -- (a.business_gubun = '동물병원' AND a.street_name_address like '서울 강남구%') OR 
+                ST_Distance_Sphere(POINT(a.longitude, a.latitude), POINT(@input_longitude, @input_latitude)) <= 2000
+            ORDER BY ranking DESC
+          ) X LIMIT 4 OFFSET 0;
         ```
       parameters:
-        - name: businessGubun
+        - name: business_gubun
           in: query
           required: true
           description: 장소 구분
           schema:
             $ref: '#/components/schemas/businessGubun'
-        - name: zipcode
-          in: query
-          required: false
-          description: '값이 null인 경우는 위도, 경도로 내 주변 검색'
-          schema:
-            $ref: '#/components/schemas/zipcode'
-        - name: rankingOrder
+        - name: sido
           in: query
           required: true
-          description: 기간
+          description: 시도
+          schema:
+            $ref: '#/components/schemas/sido'
+        - name: sigungu
+          in: query
+          required: true
+          description: 시군구
+          schema:
+            $ref: '#/components/schemas/sigungu'
+        - name: latitude
+          in: query
+          required: true
+          description: 위도 좌표
+          schema:
+            $ref: '#/components/schemas/latitude'
+        - name: longitude
+          in: query
+          required: true
+          description: 경도 좌표
+          schema:
+            $ref: '#/components/schemas/longitude'
+        - name: page
+          in: query
+          required: true
+          description: 페이지 번호(0부터 시작)
+          schema:
+            $ref: '#/components/schemas/page'
+        - name: size
+          in: query
+          required: true
+          description: 페이지 사이즈
+          schema:
+            $ref: '#/components/schemas/size'
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  description: 랭킹
+                  properties:
+                    total_count:
+                      $ref: '#/components/schemas/totalCount'
+                    place_id:
+                      $ref: '#/components/schemas/placeId'
+                    place_name:
+                      $ref: '#/components/schemas/placeNam'
+                    ranking:
+                      $ref: '#/components/schemas/ranking'
+                    total_review_count:
+                      $ref: '#/components/schemas/totalReviewCount'
+                    distance:
+                      $ref: '#/components/schemas/distance'
+                    image_url:
+                      $ref: '#/components/schemas/imageUrl'
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  /v2/rankings:
+    get:
+      tags:
+        - 랭킹(70p)
+      summary: 랭킹 목록(작성중)
+      description: |
+        71p 랭킹-목록
+        ```
+        ```
+      parameters:
+        - name: business_gubun
+          in: query
+          required: true
+          description: 장소 구분
+          schema:
+            $ref: '#/components/schemas/businessGubun'
+        - name: sido
+          in: query
+          required: true
+          description: 시도
+          schema:
+            $ref: '#/components/schemas/sido'
+        - name: sigungu
+          in: query
+          required: true
+          description: 시군구
+          schema:
+            $ref: '#/components/schemas/sigungu'
+        - name: ranking_order
+          in: query
+          required: true
+          description: 정렬 기준
           schema:
             $ref: '#/components/schemas/rankingOrder'
-        - name: weekendOpenYn
+        - name: weekend_open_yn
           in: query
           required: true
           description: 주말 진료 여부
           schema:
             $ref: '#/components/schemas/weekendOpenYn'
-        - name: allDayOpenYn
+        - name: all_day_open_yn
           in: query
           required: true
           description: 24시간 진료 여부
           schema:
             $ref: '#/components/schemas/allDayOpenYn'
+        - name: open_yn
+          in: query
+          required: true
+          description: 오픈 여부
+          schema:
+            $ref: '#/components/schemas/openYn'
         - name: latitude
           in: query
           required: true
@@ -1068,30 +1383,26 @@ paths:
                   type: object
                   description: 랭킹
                   properties:
-                    placeId:
+                    place_id:
                       $ref: '#/components/schemas/placeId'
-                    placeName:
+                    place_name:
                       $ref: '#/components/schemas/placeNam'
                     ranking:
                       $ref: '#/components/schemas/ranking'
-                    blogReviewCount:
-                      $ref: '#/components/schemas/blogReviewCount'
-                    visitorReviewCount:
-                      $ref: '#/components/schemas/visitorReviewCount'
+                    total_review_count:
+                      $ref: '#/components/schemas/totalReviewCount'
                     distance:
                       $ref: '#/components/schemas/distance'
-                    allYearRoundYn:
+                    all_year_round_yn:
                       $ref: '#/components/schemas/allYearRoundYn'
-                    streetNameAddress:
+                    street_name_address:
                       $ref: '#/components/schemas/streetNameAddress'
-                    openYn:
-                      $ref: '#/components/schemas/openYn'
-                    openTime:
+                    open_status:
+                      $ref: '#/components/schemas/openStatus'
+                    open_time:
                       $ref: '#/components/schemas/openTime'
-                    imageUrls:
-                      type: array
-                      items:
-                        $ref: '#/components/schemas/imageUrl'
+                    image_url:
+                      $ref: '#/components/schemas/imageUrl'
         default:
           description: Error
           content:
@@ -1100,36 +1411,102 @@ paths:
                 $ref: '#/components/schemas/error'
   /v1/reviews:
     get:
-      summary: 베스트 리뷰 목록
+      tags:
+        - 통합메인(61p)
+      summary: 메인-베스트 리뷰 목록
+      description: "62p 베스트 리뷰\n```\n  SELECT\n      X.place_id,\n      X.ranking,\n      X.writer,\n      X.register_time,\n      X.place_name,\n      X.content,\n      X.image_url\n  FROM\n  (\n    SELECT       \n        a.id AS place_id,\n        a.ranking,\n        b.writer,\n        b.register_time,\n        b.content,\n        TRIM(a.NAME) AS place_name, \n        if (a.id NOT IN(SELECT bb.id FROM tb_file aa, tb_place bb WHERE bb.id = aa.tb_place_id), '',\n          (SELECT \n              CONCAT('http://', (SELECT z.ip1 FROM tb_server z, tb_file y WHERE z.id = y.tb_server_id AND y.tb_place_id = a.id), full_path, '/', save_name) \n          FROM tb_file WHERE tb_place_id = a.id)) AS image_url\n    FROM \n        tb_place AS a,\n        tb_review AS b,\n        (SELECT @rest_meter := 0) AS c,\n        (SELECT @input_longitude := 127.027528) AS d,\n        (SELECT @input_latitude := 37.497637) AS e\n    WHERE \n        -- (a.business_gubun = '동물병원' AND a.street_name_address like '서울 강남구%') AND\n        ST_Distance_Sphere(POINT(a.longitude, a.latitude), POINT(@input_longitude, @input_latitude)) <= 2000\t\n        AND a.id = b.tb_place_id\n    ORDER BY a.blog_review_count DESC\n  ) X LIMIT 4 OFFSET 0;\n```\n"
       parameters:
-        - name: businessGubun
+        - name: business_gubun
           in: query
           required: true
           description: 장소 구분
           schema:
             $ref: '#/components/schemas/businessGubun'
-        - name: zipcode
-          in: query
-          required: false
-          description: '값이 null인 경우는 위도, 경도로 내 주변 검색'
-          schema:
-            $ref: '#/components/schemas/zipcode'
-        - name: latitude
+        - name: sido
           in: query
           required: true
-          description: 위도 좌표
+          description: 시도
           schema:
-            $ref: '#/components/schemas/latitude'
-        - name: longitude
+            $ref: '#/components/schemas/sido'
+        - name: sigungu
           in: query
           required: true
-          description: 경도 좌표
+          description: 시군구
           schema:
-            $ref: '#/components/schemas/longitude'
+            $ref: '#/components/schemas/sigungu'
         - name: page
           in: query
           required: true
-          description: 페이지 번호
+          description: 페이지 번호(0부터 시작)
+          schema:
+            $ref: '#/components/schemas/page'
+        - name: size
+          in: query
+          required: true
+          description: 페이지 사이즈
+          schema:
+            $ref: '#/components/schemas/size'
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  description: 리뷰
+                  properties:
+                    ranking:
+                      $ref: '#/components/schemas/ranking'
+                    register_time:
+                      $ref: '#/components/schemas/registerTime'
+                    writer:
+                      $ref: '#/components/schemas/writer'
+                    content:
+                      $ref: '#/components/schemas/content'
+                    place_name:
+                      $ref: '#/components/schemas/placeNam'
+                    image_url:
+                      $ref: '#/components/schemas/imageUrl'
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  /v2/reviews:
+    get:
+      tags:
+        - 리뷰-메인(79p)
+      summary: 리뷰 목록(작성중)
+      description: |
+        80p 리뷰 목록
+        ```
+        ```
+      parameters:
+        - name: business_gubun
+          in: query
+          required: true
+          description: 장소 구분
+          schema:
+            $ref: '#/components/schemas/businessGubun'
+        - name: sido
+          in: query
+          required: true
+          description: 시도
+          schema:
+            $ref: '#/components/schemas/sido'
+        - name: sigungu
+          in: query
+          required: true
+          description: 시군구
+          schema:
+            $ref: '#/components/schemas/sigungu'
+        - name: page
+          in: query
+          required: true
+          description: 페이지 번호(0부터 시작)
           schema:
             $ref: '#/components/schemas/page'
         - name: size
@@ -1151,15 +1528,15 @@ paths:
                   properties:
                     grade:
                       $ref: '#/components/schemas/grade'
-                    registerTime:
+                    register_time:
                       $ref: '#/components/schemas/registerTime'
                     writer:
                       $ref: '#/components/schemas/writer'
                     content:
                       $ref: '#/components/schemas/content'
-                    placeName:
+                    place_name:
                       $ref: '#/components/schemas/placeNam'
-                    imageUrl:
+                    image_urls:
                       type: array
                       items:
                         $ref: '#/components/schemas/imageUrl'
@@ -1169,122 +1546,67 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
-  '/v1/reviews/{reviewId}':
+  /v1/recommends:
     get:
-      summary: 리뷰 목록
-      description: 80p 리뷰 상세
+      tags:
+        - 통합메인(61p)
+      summary: 추천 목록
+      description: |
+        62p 메인-추천 목록
+        ```
+          SELECT
+              X.place_id,
+              X.ranking,
+              X.total_review_count,
+              X.distance,
+              X.place_name,
+              X.sido,
+              X.image_url
+          FROM
+          (
+            SELECT       
+                a.id AS place_id,
+                SUBSTRING_INDEX(a.street_name_address, ' ', 2) AS sido,
+                (TRIM(a.ranking) + 0) AS ranking,
+                (IFNULL(a.blog_review_count, 0) + IFNULL(a.visitor_review_count, 0)) AS total_review_count,
+                @rest_meter := ROUND(ST_Distance_Sphere(POINT(a.longitude, a.latitude), POINT(@input_longitude, @input_latitude))) AS rest_meter,
+                IF (@rest_meter > 1000, CONCAT(CONVERT(ROUND(@rest_meter/1000, 1), CHAR), 'km'), CONCAT(CONVERT(@rest_meter, CHAR), 'm')) AS distance,
+                TRIM(a.NAME) AS place_name, 
+                if (a.id NOT IN(SELECT bb.id FROM tb_file aa, tb_place bb WHERE bb.id = aa.tb_place_id), '',
+                  (SELECT 
+                      CONCAT('http://', (SELECT z.ip1 FROM tb_server z, tb_file y WHERE z.id = y.tb_server_id AND y.tb_place_id = a.id), full_path, '/', save_name) 
+                  FROM tb_file WHERE tb_place_id = a.id)) AS image_url
+            FROM 
+                tb_place AS a,
+                (SELECT @rownum := 0) AS b,
+                (SELECT @rest_meter := 0) AS c,
+                (SELECT @input_longitude := 127.027528) AS d,
+                (SELECT @input_latitude := 37.497637) AS e
+            WHERE 
+                -- (a.business_gubun = '동물병원' AND a.street_name_address like '서울 강남구%') OR 
+                ST_Distance_Sphere(POINT(a.longitude, a.latitude), POINT(@input_longitude, @input_latitude)) <= 2000
+            ORDER BY rest_meter ASC, ranking DESC
+          ) X LIMIT 4 OFFSET 0;
+        ```
       parameters:
-        - name: reviewId
-          in: path
-          required: true
-          description: 리뷰 아이디
-          schema:
-            $ref: '#/components/schemas/reviewId'
-      responses:
-        '200':
-          description: Ok
-          content:
-            application/json:
-              schema:
-                type: object
-                description: 리뷰
-                properties:
-                  grade:
-                    $ref: '#/components/schemas/grade'
-                  registerTime:
-                    $ref: '#/components/schemas/registerTime'
-                  writer:
-                    $ref: '#/components/schemas/writer'
-                  content:
-                    $ref: '#/components/schemas/content'
-                  placeName:
-                    $ref: '#/components/schemas/placeNam'
-                  imageUrls:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/imageUrl'
-        default:
-          description: Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
-  /v1/places/histories:
-    get:
-      summary: 최근 본 장소
-      parameters:
-        - name: page
-          in: query
-          required: true
-          description: 페이지 번호
-          schema:
-            $ref: '#/components/schemas/page'
-        - name: size
-          in: query
-          required: true
-          description: 페이지 사이즈
-          schema:
-            $ref: '#/components/schemas/size'
-      responses:
-        '200':
-          description: Ok
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    placeName:
-                      $ref: '#/components/schemas/placeNam'
-                    sido:
-                      $ref: '#/components/schemas/sido'
-                    sigungu:
-                      $ref: '#/components/schemas/sigungu'
-        default:
-          description: Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
-  '/v1/places/histories/{placeId}':
-    delete:
-      summary: 최근 본 장소 삭제
-      description: 최근 본 장소 삭제
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: placeId
-          in: path
-          required: true
-          description: 리뷰 아이디
-          schema:
-            $ref: '#/components/schemas/placeId'
-      responses:
-        '200':
-          description: 성공
-        default:
-          description: Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
-  /v1/places/recommends:
-    get:
-      summary: 추천 장소 목록
-      parameters:
-        - name: businessGubun
+        - name: business_gubun
           in: query
           required: true
           description: 장소 구분
           schema:
             $ref: '#/components/schemas/businessGubun'
-        - name: zipcode
+        - name: sido
           in: query
-          required: false
-          description: '값이 null인 경우는 위도, 경도로 내 주변 검색'
+          required: true
+          description: 시도
           schema:
-            $ref: '#/components/schemas/zipcode'
+            $ref: '#/components/schemas/sido'
+        - name: sigungu
+          in: query
+          required: true
+          description: 시군구
+          schema:
+            $ref: '#/components/schemas/sigungu'
         - name: latitude
           in: query
           required: true
@@ -1300,7 +1622,7 @@ paths:
         - name: page
           in: query
           required: true
-          description: 페이지 번호
+          description: 페이지 번호(0부터 시작)
           schema:
             $ref: '#/components/schemas/page'
         - name: size
@@ -1320,43 +1642,50 @@ paths:
                   type: object
                   description: 랭킹
                   properties:
-                    placeId:
+                    place_id:
                       $ref: '#/components/schemas/placeId'
-                    placeName:
-                      $ref: '#/components/schemas/placeNam'
-                    period:
-                      $ref: '#/components/schemas/period'
                     ranking:
                       $ref: '#/components/schemas/ranking'
-                    blogReviewCount:
-                      $ref: '#/components/schemas/blogReviewCount'
-                    visitorReviewCount:
-                      $ref: '#/components/schemas/visitorReviewCount'
+                    total_review_count:
+                      $ref: '#/components/schemas/totalReviewCount'
+                    place_name:
+                      $ref: '#/components/schemas/placeNam'
+                    sido:
+                      $ref: '#/components/schemas/sido'
                     distance:
                       $ref: '#/components/schemas/distance'
-                    openYn:
-                      $ref: '#/components/schemas/openYn'
-                    openTime:
-                      $ref: '#/components/schemas/openTime'
-                    imageUrls:
-                      type: array
-                      items:
-                        $ref: '#/components/schemas/imageUrl'
+                    image_url:
+                      $ref: '#/components/schemas/imageUrl'
         default:
           description: Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
-  /v1/notices:
+  /v1/pet-contents:
     get:
-      summary: 공지
-      description: 공지/소식
+      tags:
+        - 통합메인(61p)
+      summary: 펫 연구소 콘텐트 목록
+      description: |
+        62p 메인-팻 연구소 콘텐츠 목록
+        ```
+          SELECT 
+            a.id AS content_id, 
+            a.category,
+            a.title,
+            a.hashtag,
+            CONCAT('http://', b.ip1, c.full_path, '/', c.save_name) AS image_url
+            FROM tb_pet_raboratory a, tb_server b, tb_file c
+          WHERE c.tb_pet_raboratory_id = a.id
+          ORDER BY a.register_time DESC
+          LIMIT 0, 4; -- page, size
+        ```
       parameters:
         - name: page
           in: query
           required: true
-          description: 페이지 번호
+          description: 페이지 번호(0부터 시작)
           schema:
             $ref: '#/components/schemas/page'
         - name: size
@@ -1367,26 +1696,157 @@ paths:
             $ref: '#/components/schemas/size'
       responses:
         '200':
-          description: 성공
+          description: Ok
           content:
             application/json:
               schema:
                 type: array
                 items:
                   type: object
+                  description: 랭킹
                   properties:
-                    noticeId:
-                      $ref: '#/components/schemas/noticeId'
+                    content_id:
+                      $ref: '#/components/schemas/contentId'
+                    category:
+                      $ref: '#/components/schemas/category'
                     title:
                       $ref: '#/components/schemas/title'
-                    registerTime:
-                      $ref: '#/components/schemas/registerTime'
-                    linkUrl:
-                      $ref: '#/components/schemas/linkUrl'
-                    imageUrl:
+                    hashtag:
+                      $ref: '#/components/schemas/hashtag'
+                    image_url:
                       $ref: '#/components/schemas/imageUrl'
-                    noticeGubun:
-                      $ref: '#/components/schemas/noticeGubun'
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  '/v1/places/{place_id}':
+    get:
+      tags:
+        - 장소상세-홈(90p)
+      summary: 장소상세(작성중)
+      description: |
+        91p 장소상세-홈
+        ```
+        ```
+      parameters:
+        - name: place_id
+          in: path
+          required: true
+          description: 장소 아이디
+          schema:
+            $ref: '#/components/schemas/placeId'
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  description: 랭킹
+                  properties:
+                    place_id:
+                      $ref: '#/components/schemas/placeId'
+                    place_name:
+                      $ref: '#/components/schemas/placeNam'
+                    ranking:
+                      $ref: '#/components/schemas/ranking'
+                    daily_ranking:
+                      $ref: '#/components/schemas/dailyRanking'
+                    weekly_ranking:
+                      $ref: '#/components/schemas/weelkyRanking'
+                    monthly_ranking:
+                      $ref: '#/components/schemas/monthlyRanking'
+                    blog_review_count:
+                      $ref: '#/components/schemas/blogReviewCount'
+                    visitor_review_count:
+                      $ref: '#/components/schemas/visitorReviewCount'
+                    street_name_address:
+                      $ref: '#/components/schemas/streetNameAddress'
+                    lot_number_address:
+                      $ref: '#/components/schemas/lotNumberAddress'
+                    way_to_come1:
+                      $ref: '#/components/schemas/wayToCome1'
+                    way_to_come2:
+                      $ref: '#/components/schemas/wayToCome2'
+                    zipcode:
+                      $ref: '#/components/schemas/zipcode'
+                    distance:
+                      $ref: '#/components/schemas/category'
+                    total_review_count:
+                      $ref: '#/components/schemas/totalReviewCount'
+                    phone:
+                      $ref: '#/components/schemas/phone'
+                    payment_method:
+                      $ref: '#/components/schemas/paymentMethod'
+                    content:
+                      $ref: '#/components/schemas/content'
+                    information_use:
+                      $ref: '#/components/schemas/instagramUrl'
+                    homepage_url:
+                      $ref: '#/components/schemas/homepageUrl'
+                    blog_url:
+                      $ref: '#/components/schemas/blogUrl'
+                    instagram_url:
+                      type: string
+                      description: 인스타그램 주소
+                    facebook_url:
+                      $ref: '#/components/schemas/facebookUrl'
+                    youtube_url:
+                      $ref: '#/components/schemas/youtubeUrl'
+                    business_gubun:
+                      $ref: '#/components/schemas/businessGubun'
+                    business_hour:
+                      $ref: '#/components/schemas/businessHour'
+                    hashtag:
+                      $ref: '#/components/schemas/hashtag'
+                    latitude:
+                      $ref: '#/components/schemas/latitude'
+                    longitude:
+                      $ref: '#/components/schemas/longitude'
+                    place_summary:
+                      $ref: '#/components/schemas/placeSummary'
+                    image_url:
+                      $ref: '#/components/schemas/imageUrl'
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  /v1/devices:
+    post:
+      tags:
+        - 기타
+      summary: 디바이스 추가
+      description: |
+        앱 실행 후 uuid를 통해 디바이스 정보를 추가한다. ip, mac_address는 저장할 필요가 없다고 판단한다.<br>
+        uuid가 이미 존재하면 modify_time을 수정한다.<br>
+        사용자가 로그인을 수행하면 tb_user_id, modify_time을 수정한다.<br>
+        <a href='https://developer.android.com/training/articles/user-data-ids?hl=ko' target='_blank'>안드로이드 uuid 정책</a><br>
+        <a href='https://www.hooni.net/xe/study/2273' target='_blank'>ios uuid 정책</a><br>
+        ```
+        INSERT INTO tb_device(`uuid`, os, ip, mac_address, modify_time, register_time)
+        VALUES('941780cc-5a53-4455-9cf7-835ff2bbbe1a', 'Android 4.4.2', NULL, NULL, now(), now());
+        ```
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                uuid:
+                  $ref: '#/components/schemas/uuid'
+                os:
+                  $ref: '#/components/schemas/os'
+      responses:
+        '200':
+          description: 성공
         default:
           description: Error
           content:
@@ -1415,6 +1875,9 @@ components:
     blogReviewCount:
       type: integer
       description: 블로그 리뷰수
+    blogUrl:
+      type: string
+      description: 블라그 주소
     businessGubun:
       type: string
       description: 장소 구분
@@ -1426,18 +1889,30 @@ components:
         - 산책
         - 카페
         - 호텔
+    businessHour:
+      type: string
+      description: 운영시간
     category:
       type: string
       description: 콘텐츠 카테고리
+    code:
+      type: string
+      description: 확인 코드
     commentCount:
       type: integer
       description: 댓글 수
     content:
       type: string
       description: 내용
+    contentId:
+      type: integer
+      description: 콘텐츠 아이디
     currentPoint:
       type: integer
       description: 현재 포인트
+    dailyRanking:
+      type: integer
+      description: 일간 랭킹
     distance:
       type: string
       description: 거리
@@ -1467,6 +1942,9 @@ components:
     eventStartDate:
       type: string
       description: 이벤트 시작일
+    facebookUrl:
+      type: string
+      description: 페이스북 주소
     grade:
       type: string
       description: 평점
@@ -1474,6 +1952,9 @@ components:
     hashtag:
       type: string
       description: 해시태크
+    homepageUrl:
+      type: string
+      description: 홈페이지 주소
     htmlYn:
       type: string
       description: html yn
@@ -1483,6 +1964,11 @@ components:
     imageUrl:
       type: string
       description: 장소 이미지 주소
+    informationUse:
+      $ref: '#/components/schemas/instagramUrl'
+    instagramUrl:
+      type: string
+      description: 이용안내/정보(부가서비스포함)
     keyword:
       type: string
       description: 키워드
@@ -1507,6 +1993,12 @@ components:
     longitude:
       type: number
       description: 경도 좌표
+    lotNumberAddress:
+      type: string
+      description: 지번 주소
+    monthlyRanking:
+      type: integer
+      description: 월간 랭킹
     newPassword:
       type: string
       example: '********'
@@ -1517,6 +2009,9 @@ components:
     noticeId:
       type: integer
       description: 공지 아이디
+    openStatus:
+      type: string
+      description: 영업 구분
     openTime:
       type: string
       description: 영업 시작 시간
@@ -1527,6 +2022,9 @@ components:
       type: integer
       example: 1
       description: 정렬 순서
+    os:
+      type: string
+      description: 단말기 os 정보
     otp:
       type: string
       example: '3454'
@@ -1539,6 +2037,9 @@ components:
       type: string
       example: '********'
       description: 비밀번호(사용자 비번 또는 sns 인증토큰)
+    paymentMethod:
+      type: string
+      description: 결제 수단
     period:
       type: string
       description: 기간
@@ -1557,7 +2058,10 @@ components:
       type: string
       description: 장소 이름
       example: 해뜨는 동물병원
-    point:
+    placeSummary:
+      type: string
+      description: 장소 요약
+    pointAmount:
       type: integer
       example: 2000
       description: 포인트
@@ -1594,6 +2098,12 @@ components:
     reason:
       type: string
       description: 사유
+    receiveInformationYn:
+      type: string
+      description: 마케팅 활용 동의 여부
+      enum:
+        - 'y'
+        - 'n'
     registerTime:
       type: string
       description: 작성일
@@ -1634,6 +2144,9 @@ components:
     token:
       type: string
       description: 인증 토큰
+    totalCount:
+      type: integer
+      description: 전체 글 갯수
     totalReviewCount:
       type: integer
       description: 전체 리뷰수
@@ -1644,6 +2157,9 @@ components:
       type: string
       example: 홍길동
       description: 사용자 명
+    uuid:
+      type: string
+      description: 디바이스 식별자
     visitorReviewCount:
       type: integer
       description: 방문자 리뷰수
@@ -1661,12 +2177,21 @@ components:
     watchId:
       type: integer
       description: 찜 아이디
+    wayToCome1:
+      type: string
+      description: 오시는 길 1
+    wayToCome2:
+      type: string
+      description: 오시는 길 2
     weekendOpenYn:
       type: string
       description: 주말 개점 여부
       enum:
         - 'y'
         - 'n'
+    weelkyRanking:
+      type: integer
+      description: 주간 랭킹
     withdrawalCause:
       type: string
       description: 탈퇴 사유
@@ -1680,6 +2205,9 @@ components:
     writerName:
       type: string
       description: 작성자 이름
+    youtubeUrl:
+      type: string
+      description: 유튜브 주소
     zipcode:
       type: string
       description: 우편 번호

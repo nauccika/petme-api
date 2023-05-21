@@ -1,0 +1,94 @@
+get:
+  tags:
+    - 장소상세-홈(90p)
+  summary: 장소상세(작성중)
+  description: |
+    91p 장소상세-홈
+    ```
+    ```
+  parameters:
+    - name: place_id
+      in: path
+      required: true
+      description: 장소 아이디
+      schema:
+        $ref: '../schemas/placeId.yaml'
+  responses:
+    '200':
+      description: Ok
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              type: object
+              description: 랭킹
+              properties:
+                place_id:
+                  $ref: '../schemas/placeId.yaml'
+                place_name:
+                  $ref: '../schemas/placeName.yaml'
+                ranking:
+                  $ref: '../schemas/ranking.yaml'
+                daily_ranking:
+                  $ref: '../schemas/dailyRanking.yaml'
+                weekly_ranking:
+                  $ref: '../schemas/weeklyRanking.yaml'
+                monthly_ranking:
+                  $ref: '../schemas/monthlyRanking.yaml'
+                blog_review_count:
+                  $ref: '../schemas/blogReviewCount.yaml'
+                visitor_review_count:
+                  $ref: '../schemas/visitorReviewCount.yaml'
+                street_name_address:
+                  $ref: '../schemas/streetNameAddress.yaml'
+                lot_number_address:
+                  $ref: '../schemas/lotNumberAddress.yaml'
+                way_to_come1:
+                  $ref: '../schemas/wayToCome1.yaml'
+                way_to_come2:
+                  $ref: '../schemas/wayToCome2.yaml'
+                zipcode:
+                  $ref: '../schemas/zipcode.yaml'
+                distance:
+                  $ref: '../schemas/category.yaml'
+                total_review_count:
+                  $ref: '../schemas/totalReviewCount.yaml'
+                phone:
+                  $ref: '../schemas/phone.yaml'
+                payment_method:
+                  $ref: '../schemas/paymentMethod.yaml'
+                content:
+                  $ref: '../schemas/content.yaml'
+                information_use:
+                  $ref: '../schemas/informationUse.yaml'
+                homepage_url:
+                  $ref: '../schemas/homepageUrl.yaml'
+                blog_url:
+                  $ref: '../schemas/blogUrl.yaml'
+                instagram_url:
+                  $ref: '../schemas/instagramUrl.yaml'
+                facebook_url:
+                  $ref: '../schemas/facebookUrl.yaml'
+                youtube_url:
+                  $ref: '../schemas/youtubeUrl.yaml'
+                business_gubun:
+                  $ref: '../schemas/businessGubun.yaml'
+                business_hour:
+                  $ref: '../schemas/businessHour.yaml'
+                hashtag:
+                  $ref: '../schemas/hashtag.yaml'
+                latitude:
+                  $ref: '../schemas/latitude.yaml'
+                longitude:
+                  $ref: '../schemas/longitude.yaml'
+                place_summary:
+                  $ref: '../schemas/placeSummary.yaml'
+                image_url:
+                  $ref: '../schemas/imageUrl.yaml'
+    default:
+      description: Error
+      content:
+        application/json:
+          schema:
+            $ref: '../schemas/error.yaml'

@@ -1,4 +1,6 @@
 get:
+  tags:
+    - 펫연구소 작성글/댓글(53p)
   summary: 펫 연구소 Q&A 작성글
   description: 55p 마이-펫 연구소 작성글
   security:
@@ -29,9 +31,9 @@ get:
                 - category
                 - title
                 - writer
-                - writeTime
-                - commentCount
-                - imageUrl
+                - write_time
+                - comment_count
+                - image_url
               properties:
                 category:
                   $ref: '../schemas/category.yaml'
@@ -39,11 +41,11 @@ get:
                   $ref: '../schemas/title.yaml'
                 writer:
                   $ref: '../schemas/writer.yaml'
-                writeTime:
+                write_time:
                   $ref: '../schemas/writeTime.yaml'
-                commentCount:
+                comment_count:
                   $ref: '../schemas/commentCount.yaml'
-                imageUrl:
+                image_url:
                   $ref: '../schemas/imageUrl.yaml'
     default:
       description: Error

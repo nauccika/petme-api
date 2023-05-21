@@ -1,4 +1,6 @@
 get:
+  tags:
+    - 마이-찜(50p)
   summary: 마이찜-콘텐츠
   description: 52p 마이-찜-콘텐츠
   security:
@@ -26,7 +28,7 @@ get:
             items:
               type: object
               properties:
-                raboratoryId:
+                raboratory_id:
                   $ref: '../schemas/raboratoryId.yaml'
                 category:
                   $ref: '../schemas/category.yaml'

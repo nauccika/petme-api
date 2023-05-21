@@ -1,4 +1,6 @@
 get:
+  tags:
+    - 마이-리뷰(43p)
   summary: 내 리뷰 목록
   description: 44p 마이-리뷰
   security:
@@ -26,27 +28,27 @@ get:
             items:
               type: object
               properties:
-                reviewId:
+                review_id:
                   $ref: '../schemas/reviewId.yaml'
                 grade:
                   $ref: '../schemas/grade.yaml'
-                placeName:
+                place_name:
                   $ref: '../schemas/placeName.yaml'
-                registerTime:
+                register_time:
                   $ref: '../schemas/registerTime.yaml'
                 keyword:
                   $ref: '../schemas/keyword.yaml'
                 content:
                   $ref: '../schemas/content.yaml'
-                imageUrls:
+                image_urls:
                   type: array
                   items:
                     $ref: '../schemas/imageUrl.yaml'
               required:
-                - reviewId
+                - review_id
                 - grade
-                - placeName
-                - registerTime
+                - place_name
+                - register_time
                 - keyword
                 - content
     default:

@@ -1,10 +1,12 @@
 get:
+  tags:
+    - 마이-이벤트/공지사항(56p)
   summary: 이벤트 상세
   description: 58p 이벤트 상세
   security:
     - bearerAuth: [ ]
   parameters:
-    - name: eventId
+    - name: event_id
       in: path
       required: true
       description: 이벤트 아이디
@@ -20,21 +22,21 @@ get:
             required:
               - title
               - content
-              - eventStartDate
-              - eventEndDate
-              - imageUrl
+              - event_start_date
+              - event_end_date
+              - image_url
             properties:
               title:
                 $ref: '../schemas/title.yaml'
               content:
                 $ref: '../schemas/content.yaml'
-              eventStartDate:
+              event_start_date:
                 $ref: '../schemas/eventStartDate.yaml'
-              eventEndDate:
+              event_end_date:
                 $ref: '../schemas/eventEndDate.yaml'
-              imageUrl:
+              image_url:
                 $ref: '../schemas/imageUrl.yaml'
-              linkUrl:
+              link_url:
                 $ref: '../schemas/linkUrl.yaml'
     default:
       description: Error

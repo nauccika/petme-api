@@ -1,5 +1,44 @@
 get:
-  summary: 추천 장소 목록
+  tags:
+    - 통합메인(61p)
+  summary: 추천 목록
+  description: |
+    62p 메인-추천 목록
+    ```
+      SELECT
+          X.place_id,
+          X.ranking,
+          X.total_review_count,
+          X.distance,
+          X.place_name,
+          X.sido,
+          X.image_url
+      FROM
+      (
+        SELECT       
+            a.id AS place_id,
+            SUBSTRING_INDEX(a.street_name_address, ' ', 2) AS sido,
+            (TRIM(a.ranking) + 0) AS ranking,
+            (IFNULL(a.blog_review_count, 0) + IFNULL(a.visitor_review_count, 0)) AS total_review_count,
+            @rest_meter := ROUND(ST_Distance_Sphere(POINT(a.longitude, a.latitude), POINT(@input_longitude, @input_latitude))) AS rest_meter,
+            IF (@rest_meter > 1000, CONCAT(CONVERT(ROUND(@rest_meter/1000, 1), CHAR), 'km'), CONCAT(CONVERT(@rest_meter, CHAR), 'm')) AS distance,
+            TRIM(a.NAME) AS place_name, 
+            if (a.id NOT IN(SELECT bb.id FROM tb_file aa, tb_place bb WHERE bb.id = aa.tb_place_id), '',
+              (SELECT 
+                  CONCAT('http://', (SELECT z.ip1 FROM tb_server z, tb_file y WHERE z.id = y.tb_server_id AND y.tb_place_id = a.id), full_path, '/', save_name) 
+              FROM tb_file WHERE tb_place_id = a.id)) AS image_url
+        FROM 
+            tb_place AS a,
+            (SELECT @rownum := 0) AS b,
+            (SELECT @rest_meter := 0) AS c,
+            (SELECT @input_longitude := 127.027528) AS d,
+            (SELECT @input_latitude := 37.497637) AS e
+        WHERE 
+            -- (a.business_gubun = '동물병원' AND a.street_name_address like '서울 강남구%') OR 
+            ST_Distance_Sphere(POINT(a.longitude, a.latitude), POINT(@input_longitude, @input_latitude)) <= 2000
+        ORDER BY rest_meter ASC, ranking DESC
+      ) X LIMIT 4 OFFSET 0;
+    ```
   parameters:
     - name: business_gubun
       in: query
@@ -7,12 +46,18 @@ get:
       description: 장소 구분
       schema:
         $ref: '../schemas/businessGubun.yaml'
-    - name: zipcode
+    - name: sido
       in: query
-      required: false
-      description: 값이 null인 경우는 위도, 경도로 내 주변 검색
+      required: true
+      description: 시도
       schema:
-        $ref: '../schemas/zipcode.yaml'
+        $ref: '../schemas/sido.yaml'
+    - name: sigungu
+      in: query
+      required: true
+      description: 시군구
+      schema:
+        $ref: '../schemas/sigungu.yaml'
     - name: latitude
       in: query
       required: true
@@ -28,7 +73,7 @@ get:
     - name: page
       in: query
       required: true
-      description: 페이지 번호
+      description: 페이지 번호(0부터 시작)
       schema:
         $ref: '../schemas/page.yaml'
     - name: size
@@ -50,26 +95,18 @@ get:
               properties:
                 place_id:
                   $ref: '../schemas/placeId.yaml'
-                place_name:
-                  $ref: '../schemas/placeName.yaml'
-                period:
-                  $ref: '../schemas/period.yaml'
                 ranking:
                   $ref: '../schemas/ranking.yaml'
-                blog_review_count:
-                  $ref: '../schemas/blogReviewCount.yaml'
-                visitor_review_count:
-                  $ref: '../schemas/visitorReviewCount.yaml'
+                total_review_count:
+                  $ref: '../schemas/totalReviewCount.yaml'
+                place_name:
+                  $ref: '../schemas/placeName.yaml'
+                sido:
+                  $ref: '../schemas/sido.yaml'
                 distance:
                   $ref: '../schemas/distance.yaml'
-                open_yn:
-                  $ref: '../schemas/openYn.yaml'
-                open_time:
-                  $ref: '../schemas/openTime.yaml'
-                image_urls:
-                  type: array
-                  items:
-                    $ref: '../schemas/imageUrl.yaml'
+                image_url:
+                  $ref: '../schemas/imageUrl.yaml'
     default:
       description: Error
       content:

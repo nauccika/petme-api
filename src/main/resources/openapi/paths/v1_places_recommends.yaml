@@ -1,7 +1,7 @@
 get:
   summary: 추천 장소 목록
   parameters:
-    - name: businessGubun
+    - name: business_gubun
       in: query
       required: true
       description: 장소 구분
@@ -48,25 +48,25 @@ get:
               type: object
               description: 랭킹
               properties:
-                placeId:
+                place_id:
                   $ref: '../schemas/placeId.yaml'
-                placeName:
+                place_name:
                   $ref: '../schemas/placeName.yaml'
                 period:
                   $ref: '../schemas/period.yaml'
                 ranking:
                   $ref: '../schemas/ranking.yaml'
-                blogReviewCount:
+                blog_review_count:
                   $ref: '../schemas/blogReviewCount.yaml'
-                visitorReviewCount:
+                visitor_review_count:
                   $ref: '../schemas/visitorReviewCount.yaml'
                 distance:
                   $ref: '../schemas/distance.yaml'
-                openYn:
+                open_yn:
                   $ref: '../schemas/openYn.yaml'
-                openTime:
+                open_time:
                   $ref: '../schemas/openTime.yaml'
-                imageUrls:
+                image_urls:
                   type: array
                   items:
                     $ref: '../schemas/imageUrl.yaml'

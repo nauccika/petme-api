@@ -1,19 +1,30 @@
+---
 allDayOpenYn:
   $ref: ./allDayOpenYn.yaml
 allYearRoundYn:
   $ref: ./allYearRoundYn.yaml
 blogReviewCount:
   $ref: ./blogReviewCount.yaml
+blogUrl:
+  $ref: ./blogUrl.yaml
 businessGubun:
   $ref: ./businessGubun.yaml
+businessHour:
+  $ref: ./businessHour.yaml
 category:
   $ref: ./category.yaml
+code:
+  $ref: ./code.yaml
 commentCount:
   $ref: ./CommentCount.yaml
 content:
   $ref: ./content.yaml
+contentId:
+  $ref: ./contentId.yaml
 currentPoint:
   $ref: ./currentPoint.yaml
+dailyRanking:
+  $ref: ./dailyRanking.yaml
 distance:
   $ref: ./distance.yaml
 email:
@@ -26,14 +37,22 @@ eventId:
   $ref: ./eventId.yaml
 eventStartDate:
   $ref: ./eventStartDate.yaml
+facebookUrl:
+  $ref: ./facebookUrl.yaml
 grade:
   $ref: ./grade.yaml
 hashtag:
   $ref: ./hashtag.yaml
+homepageUrl:
+  $ref: ./homepageUrl.yaml
 htmlYn:
   $ref: ./htmlYn.yaml
 imageUrl:
   $ref: ./imageUrl.yaml
+informationUse:
+  $ref: ./informationUse.yaml
+instagramUrl:
+  $ref: ./informationUse.yaml
 keyword:
   $ref: ./keyword.yaml
 latitude:
@@ -46,24 +65,34 @@ loginType:
   $ref: ./loginType.yaml
 longitude:
   $ref: ./longitude.yaml
+lotNumberAddress:
+  $ref: ./lotNumberAddress.yaml
+monthlyRanking:
+  $ref: ./monthlyRanking.yaml
 newPassword:
   $ref: ./newPassword.yaml
 noticeGubun:
   $ref: ./noticeGubun.yaml
 noticeId:
   $ref: ./noticeId.yaml
+openStatus:
+  $ref: ./openStatus.yaml
 openTime:
   $ref: ./openTime.yaml
 openYn:
   $ref: ./openYn.yaml
 order:
   $ref: ./order.yaml
+os:
+  $ref: ./os.yaml
 otp:
   $ref: ./otp.yaml
 page:
   $ref: ./page.yaml
 password:
   $ref: ./password.yaml
+paymentMethod:
+  $ref: ./paymentMethod.yaml
 period:
   $ref: ./period.yaml
 phone:
@@ -72,8 +101,10 @@ placeId:
   $ref: ./placeId.yaml
 placeNam:
   $ref: ./placeName.yaml
-point:
-  $ref: ./point.yaml
+placeSummary:
+  $ref: ./placeSummary.yaml
+pointAmount:
+  $ref: ./pointAmount.yaml
 pointGubun:
   $ref: ./pointGubun.yaml
 pushOnOff:
@@ -90,6 +121,8 @@ readCount:
   $ref: ./readCount.yaml
 reason:
   $ref: ./reason.yaml
+receiveInformationYn:
+  $ref: ./receiveInformationYn.yaml
 registerTime:
   $ref: ./registerTime.yaml
 requiredYn:
@@ -112,12 +145,16 @@ title:
   $ref: ./title.yaml
 token:
   $ref: ./token.yaml
+totalCount:
+  $ref: ./totalCount.yaml
 totalReviewCount:
   $ref: ./totalReviewCount.yaml
 usedPoint:
   $ref: ./usedPoint.yaml
 userName:
   $ref: ./userName.yaml
+uuid:
+  $ref: ./uuid.yaml
 visitorReviewCount:
   $ref: ./visitorReviewCount.yaml
 watchCount:
@@ -126,8 +163,14 @@ watchGubun:
   $ref: ./watchGubun.yaml
 watchId:
   $ref: ./watchId.yaml
+wayToCome1:
+  $ref: ./wayToCome1.yaml
+wayToCome2:
+  $ref: ./wayToCome2.yaml
 weekendOpenYn:
   $ref: ./weekendOpenYn.yaml
+weelkyRanking:
+  $ref: ./weeklyRanking.yaml
 withdrawalCause:
   $ref: ./withdrawalCause.yaml
 writeTime:
@@ -136,5 +179,7 @@ writer:
   $ref: ./writer.yaml
 writerName:
   $ref: ./writerName.yaml
+youtubeUrl:
+  $ref: ./youtubeUrl.yaml
 zipcode:
   $ref: ./zipcode.yaml

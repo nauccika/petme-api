@@ -1,3 +1,23 @@
 {
-  "java.compile.nullAnalysis.mode": "automatic"
+  "java.compile.nullAnalysis.mode": "automatic",
+  "sqltools.connections": [
+    {
+      "mysqlOptions": {
+        "authProtocol": "default"
+      },
+      "previewLimit": 50,
+      "server": "101.101.208.77",
+      "port": 3306,
+      "driver": "MariaDB",
+      "name": "petme3",
+      "database": "petme3",
+      "username": "root",
+      "password": "dkshk@ghkswkd7"
+    }
+  ],
+  "sshfs.configs": [
+    {
+      "name": "petme"
+    }
+  ]
 }

@@ -1,4 +1,6 @@
 get:
+  tags:
+    - 통합메인(61p)
   summary: 랭킹 카테고리 목록
   description: |
     62p 메인-랭킹 카테고리
@@ -20,7 +22,7 @@ get:
               properties:
                 title:
                   $ref: '../schemas/title.yaml'
-                imageUrl:
+                image_url:
                   $ref: '../schemas/imageUrl.yaml'
     default:
       description: Error

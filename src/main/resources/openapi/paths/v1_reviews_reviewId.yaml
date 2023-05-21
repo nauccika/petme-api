@@ -2,7 +2,7 @@ get:
   summary: 리뷰 목록
   description: 80p 리뷰 상세
   parameters:
-    - name: reviewId
+    - name: review_id
       in: path
       required: true
       description: 리뷰 아이디
@@ -19,15 +19,15 @@ get:
             properties:
               grade:
                 $ref: '../schemas/grade.yaml'
-              registerTime:
+              register_time:
                 $ref: '../schemas/registerTime.yaml'
               writer:
                 $ref: '../schemas/writer.yaml'
               content:
                 $ref: '../schemas/content.yaml'
-              placeName:
+              place_name:
                 $ref: '../schemas/placeName.yaml'
-              imageUrls:
+              image_urls:
                 type: array
                 items:
                   $ref: '../schemas/imageUrl.yaml'
