@@ -1,0 +1,78 @@
+get:
+  summary: 추천 장소 목록
+  parameters:
+    - name: business_gubun
+      in: query
+      required: true
+      description: 장소 구분
+      schema:
+        $ref: '../schemas/businessGubun.yaml'
+    - name: zipcode
+      in: query
+      required: false
+      description: 값이 null인 경우는 위도, 경도로 내 주변 검색
+      schema:
+        $ref: '../schemas/zipcode.yaml'
+    - name: latitude
+      in: query
+      required: true
+      description: 위도 좌표
+      schema:
+        $ref: '../schemas/latitude.yaml'
+    - name: longitude
+      in: query
+      required: true
+      description: 경도 좌표
+      schema:
+        $ref: '../schemas/longitude.yaml'
+    - name: page
+      in: query
+      required: true
+      description: 페이지 번호
+      schema:
+        $ref: '../schemas/page.yaml'
+    - name: size
+      in: query
+      required: true
+      description: 페이지 사이즈
+      schema:
+        $ref: '../schemas/size.yaml'
+  responses:
+    '200':
+      description: Ok
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              type: object
+              description: 랭킹
+              properties:
+                place_id:
+                  $ref: '../schemas/placeId.yaml'
+                place_name:
+                  $ref: '../schemas/placeName.yaml'
+                period:
+                  $ref: '../schemas/period.yaml'
+                ranking:
+                  $ref: '../schemas/ranking.yaml'
+                blog_review_count:
+                  $ref: '../schemas/blogReviewCount.yaml'
+                visitor_review_count:
+                  $ref: '../schemas/visitorReviewCount.yaml'
+                distance:
+                  $ref: '../schemas/distance.yaml'
+                open_yn:
+                  $ref: '../schemas/openYn.yaml'
+                open_time:
+                  $ref: '../schemas/openTime.yaml'
+                image_urls:
+                  type: array
+                  items:
+                    $ref: '../schemas/imageUrl.yaml'
+    default:
+      description: Error
+      content:
+        application/json:
+          schema:
+            $ref: '../schemas/error.yaml'

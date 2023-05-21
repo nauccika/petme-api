@@ -1,0 +1,145 @@
+get:
+  summary: 랭킹 목록
+  description: |
+    62p 메인-내주변 랭킹
+    ```
+  -- 랭킹리스트
+  SELECT
+    (@rownum := @rownum + 1) AS seq,
+    X.ranking,
+    X.total_review_count,
+    X.distance,
+    X.place_name,
+    X.image_url
+  FROM
+  (
+    SELECT
+      (TRIM(d.ranking) + 0) AS ranking,
+      SUM(IFNULL(d.blog_review_count, 0) + IFNULL(d.visitor_review_count, 0)) AS total_review_count,
+      @rest_meter := ROUND(ST_Distance_Sphere(POINT(d.longitude, d.latitude), POINT(@input_longitude, @input_latitude))) '',
+      IF (@rest_meter > 1000, CONCAT(CONVERT(ROUND(@rest_meter/1000, 1), CHAR), 'km'),
+      CONCAT(CONVERT(@rest_meter, CHAR), 'm')) AS distance,
+      TRIM(d.NAME) AS place_name,
+      CONCAT('http://', a.ip1, b.full_path, '/', b.save_name) AS image_url, b.size, b.width, b.height
+    FROM
+      tb_server AS a, tb_file AS b, tb_place AS c, tb_place AS d,
+      (SELECT @rownum := 0) AS e,
+      (SELECT @rest_meter := 0) AS f,
+      (SELECT @input_longitude := 127.027528) AS g,
+      (SELECT @input_latitude := 37.497637) AS h,
+      (SELECT MIN(zipcode) AS from_zipcode, MAX(zipcode) AS to_zipcode
+         FROM tb_zipcode
+        WHERE sido = '서울특별시' AND sigungu = '강남구') AS i --sido, sigungu
+    WHERE c.id = b.tb_place_id
+      AND a.id = b.tb_server_id
+      AND b.main_image_yn = 'y'
+      AND b.gubun = 'image|장소-메인'
+      AND c.zipcode BETWEEN i.from_zipcode AND i.to_zipcode
+      AND c.business_gubun = '동물병원' --business_gubun 
+    GROUP BY d.id
+    ORDER BY ranking DESC
+    LIMIT 0, 10
+  ) X;
+    ```
+  parameters:
+    - name: business_gubun
+      in: query
+      required: true
+      description: 장소 구분
+      schema:
+        $ref: '../schemas/businessGubun.yaml'
+    - name: sido
+      in: query
+      required: true
+      description: 시도
+      schema:
+        $ref: '../schemas/sido.yaml'
+    - name: sigungu
+      in: query
+      required: true
+      description: 시군구
+      schema:
+        $ref: '../schemas/sigungu.yaml'
+    - name: ranking_order
+      in: query
+      required: true
+      description: 기간
+      schema:
+        $ref: '../schemas/rankingOrder.yaml'
+    - name: weekend_open_yn
+      in: query
+      required: true
+      description: 주말 진료 여부
+      schema:
+        $ref: '../schemas/weekendOpenYn.yaml'
+    - name: all_day_open_yn
+      in: query
+      required: true
+      description: 24시간 진료 여부
+      schema:
+        $ref: '../schemas/allDayOpenYn.yaml'
+    - name: latitude
+      in: query
+      required: true
+      description: 위도 좌표
+      schema:
+        $ref: '../schemas/latitude.yaml'
+    - name: longitude
+      in: query
+      required: true
+      description: 경도 좌표
+      schema:
+        $ref: '../schemas/longitude.yaml'
+    - name: page
+      in: query
+      required: true
+      description: 페이지 번호
+      schema:
+        $ref: '../schemas/page.yaml'
+    - name: size
+      in: query
+      required: true
+      description: 페이지 사이즈
+      schema:
+        $ref: '../schemas/size.yaml'
+  responses:
+    '200':
+      description: Ok
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              type: object
+              description: 랭킹
+              properties:
+                place_id:
+                  $ref: '../schemas/placeId.yaml'
+                place_name:
+                  $ref: '../schemas/placeName.yaml'
+                ranking:
+                  $ref: '../schemas/ranking.yaml'
+                blog_review_count:
+                  $ref: '../schemas/blogReviewCount.yaml'
+                visitor_review_count:
+                  $ref: '../schemas/visitorReviewCount.yaml'
+                distance:
+                  $ref: '../schemas/distance.yaml'
+                all_year_round_yn:
+                  $ref: '../schemas/allYearRoundYn.yaml'
+                street_name_address:
+                  $ref: '../schemas/streetNameAddress.yaml'
+                open_yn:
+                  $ref: '../schemas/openYn.yaml'
+                open_time:
+                  $ref: '../schemas/openTime.yaml'
+                image_urls:
+                  type: array
+                  items:
+                    $ref: '../schemas/imageUrl.yaml'
+    default:
+      description: Error
+      content:
+        application/json:
+          schema:
+            $ref: '../schemas/error.yaml'
