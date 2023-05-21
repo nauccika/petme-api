@@ -5,16 +5,16 @@ get:
   description: |
     62p 메인-팻 연구소 콘텐츠 목록
     ```
-      SELECT 
-        a.id AS content_id, 
-        a.category,
-        a.title,
-        a.hashtag,
-        CONCAT('http://', b.ip1, c.full_path, '/', c.save_name) AS image_url
-        FROM tb_pet_raboratory a, tb_server b, tb_file c
-      WHERE c.tb_pet_raboratory_id = a.id
-      ORDER BY a.register_time DESC
-      LIMIT 0, 4; -- page, size
+    SELECT 
+      a.id AS content_id, 
+      a.category,
+      a.title,
+      a.hashtag,
+      CONCAT('http://', b.ip1, c.full_path, '/', c.save_name) AS image_url
+      FROM tb_pet_raboratory a, tb_server b, tb_file c
+    WHERE c.tb_pet_raboratory_id = a.id
+    ORDER BY a.register_time DESC
+    LIMIT 0, 4; -- page, size
     ```
   parameters:
     - name: page

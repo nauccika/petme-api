@@ -6,6 +6,11 @@ get:
     119p 팻 연구소 콘텐츠 목록<br>
     검색어 대상 필드가 title? content?<br>
     ```
+    SELECT id, category, title, content, writer, write_time,
+       (SELECT count(1) FROM tb_petme_qna b WHERE parent_id = a.id) AS comment_count
+      FROM tb_petme_qna a
+     WHERE parent_id = 0 AND use_yn = 'y'
+     ORDER BY register_time DESC;
     ```
   parameters:
     - name: page

@@ -1669,16 +1669,16 @@ paths:
       description: |
         62p 메인-팻 연구소 콘텐츠 목록
         ```
-          SELECT 
-            a.id AS content_id, 
-            a.category,
-            a.title,
-            a.hashtag,
-            CONCAT('http://', b.ip1, c.full_path, '/', c.save_name) AS image_url
-            FROM tb_pet_raboratory a, tb_server b, tb_file c
-          WHERE c.tb_pet_raboratory_id = a.id
-          ORDER BY a.register_time DESC
-          LIMIT 0, 4; -- page, size
+        SELECT 
+          a.id AS content_id, 
+          a.category,
+          a.title,
+          a.hashtag,
+          CONCAT('http://', b.ip1, c.full_path, '/', c.save_name) AS image_url
+          FROM tb_pet_raboratory a, tb_server b, tb_file c
+        WHERE c.tb_pet_raboratory_id = a.id
+        ORDER BY a.register_time DESC
+        LIMIT 0, 4; -- page, size
         ```
       parameters:
         - name: page
@@ -1729,6 +1729,11 @@ paths:
         119p 팻 연구소 콘텐츠 목록<br>
         검색어 대상 필드가 title? content?<br>
         ```
+        SELECT id, category, title, content, writer, write_time,
+           (SELECT count(1) FROM tb_petme_qna b WHERE parent_id = a.id) AS comment_count
+          FROM tb_petme_qna a
+         WHERE parent_id is null AND use_yn = 'y'
+         ORDER BY register_time DESC;
         ```
       parameters:
         - name: page
