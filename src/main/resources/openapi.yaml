@@ -921,8 +921,7 @@ paths:
                     write_time:
                       $ref: '#/components/schemas/writeTime'
                     comment_count:
-                      type: integer
-                      description: 댓글 수
+                      $ref: '#/paths/~1v1~1pet-qnas/get/responses/200/content/application~1json/schema/items/properties/comment_count'
                     image_url:
                       $ref: '#/components/schemas/imageUrl'
         default:
@@ -1721,6 +1720,170 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
+  /v1/pet-qnas:
+    get:
+      tags:
+        - 펫연구소-Q&A-검색(118p)
+      summary: 펫 연구소 Q&A 검색(작성중)
+      description: |
+        119p 팻 연구소 콘텐츠 목록<br>
+        검색어 대상 필드가 title? content?<br>
+        ```
+        ```
+      parameters:
+        - name: page
+          in: query
+          required: true
+          description: 페이지 번호(0부터 시작)
+          schema:
+            $ref: '#/components/schemas/page'
+        - name: size
+          in: query
+          required: true
+          description: 페이지 사이즈
+          schema:
+            $ref: '#/components/schemas/size'
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  description: 랭킹
+                  properties:
+                    content_id:
+                      $ref: '#/components/schemas/contentId'
+                    category:
+                      $ref: '#/components/schemas/category'
+                    title:
+                      $ref: '#/components/schemas/title'
+                    writer:
+                      $ref: '#/components/schemas/writer'
+                    write_time:
+                      $ref: '#/components/schemas/writeTime'
+                    comment_count:
+                      type: integer
+                      description: 댓글 수
+                    image_url:
+                      $ref: '#/components/schemas/imageUrl'
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+    post:
+      '201':
+        description: Created
+      tags:
+        - 펫연구소-Q&A-작성(120p)
+      summary: 펫연구소-Q&A-작성(작성중)
+      description: |
+        121p Q&A 작성<br>
+        업로드 이미지는 base64로 인코딩된 문자열 배열이다.<br>
+        ```
+        sql
+        ```
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                category:
+                  $ref: '#/components/schemas/category'
+                title:
+                  $ref: '#/components/schemas/title'
+                content:
+                  $ref: '#/components/schemas/content'
+                images:
+                  type: array
+                  items:
+                    type: string
+                    description: base64 인코딩된 업로드 이미지
+      default:
+        description: Error
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/error'
+  '/v1/pet-qnas/{qna_id}':
+    get:
+      summary: 펫연구소-Q&A-상세(작성중)
+      tags:
+        - 펫연구소-Q&A-검색(118p)
+      description: |
+        ```
+        ```
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: qna_id
+          in: path
+          required: true
+          description: 장소 아이디
+          schema:
+            $ref: '#/components/schemas/qnaId'
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  description: 랭킹
+                  properties:
+                    qna_id:
+                      $ref: '#/components/schemas/qnaId'
+                    category:
+                      $ref: '#/components/schemas/category'
+                    title:
+                      $ref: '#/components/schemas/title'
+                    content:
+                      $ref: '#/components/schemas/content'
+                    image_urls:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/imageUrl'
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+    post:
+      '201':
+        description: Created
+      summary: 펫연구소-Q&A-상세-댓글추가(작성중)
+      tags:
+        - 펫연구소-Q&A-댓글작성(127p)
+      description: |
+        ```
+        ```
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  $ref: '#/components/schemas/content'
+                images:
+                  type: array
+                  items:
+                    $ref: '#/paths/~1v1~1pet-qnas/post/requestBody/content/application~1json/schema/properties/images/items'
+      default:
+        description: Error
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/error'
   '/v1/places/{place_id}':
     get:
       tags:
@@ -1811,6 +1974,47 @@ paths:
                       $ref: '#/components/schemas/placeSummary'
                     image_url:
                       $ref: '#/components/schemas/imageUrl'
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  '/v1/pet-contents/{contentId}':
+    get:
+      tags:
+        - 펫연구소-콘텐츠(115p)
+      summary: 펫 연구소 콘텐트 상세(작성중)
+      description: |
+        117p 메인-팻 연구소 콘텐츠 상세
+        ```
+        ```
+      parameters:
+        - name: content_id
+          in: path
+          required: true
+          description: 콘텐츠 아이디
+          schema:
+            $ref: '#/components/schemas/contentId'
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: object
+                description: 랭킹
+                properties:
+                  content_id:
+                    $ref: '#/components/schemas/contentId'
+                  category:
+                    $ref: '#/components/schemas/category'
+                  title:
+                    $ref: '#/components/schemas/title'
+                  hashtag:
+                    $ref: '#/components/schemas/hashtag'
+                  image_url:
+                    $ref: '#/components/schemas/imageUrl'
         default:
           description: Error
           content:

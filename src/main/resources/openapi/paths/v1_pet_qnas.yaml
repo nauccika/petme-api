@@ -1,0 +1,88 @@
+get:
+  tags:
+    - 펫연구소-Q&A-검색(118p)
+  summary: 펫 연구소 Q&A 검색(작성중)
+  description: |
+    119p 팻 연구소 콘텐츠 목록<br>
+    검색어 대상 필드가 title? content?<br>
+    ```
+    ```
+  parameters:
+    - name: page
+      in: query
+      required: true
+      description: 페이지 번호(0부터 시작)
+      schema:
+        $ref: '../schemas/page.yaml'
+    - name: size
+      in: query
+      required: true
+      description: 페이지 사이즈
+      schema:
+        $ref: '../schemas/size.yaml'
+  responses:
+    '200':
+      description: Ok
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              type: object
+              description: 랭킹
+              properties:
+                content_id:
+                  $ref: '../schemas/contentId.yaml'
+                category:
+                  $ref: '../schemas/category.yaml'
+                title:
+                  $ref: '../schemas/title.yaml'
+                writer:
+                  $ref: '../schemas/writer.yaml'
+                write_time:
+                  $ref: '../schemas/writeTime.yaml'
+                comment_count:
+                  $ref: '../schemas/commentCount.yaml'
+                image_url:
+                  $ref: '../schemas/imageUrl.yaml'
+    default:
+      description: Error
+      content:
+        application/json:
+          schema:
+            $ref: '../schemas/error.yaml'
+post:
+  tags:
+    - 펫연구소-Q&A-작성(120p)
+  summary: 펫연구소-Q&A-작성(작성중)
+  description: | 
+    121p Q&A 작성<br>
+    업로드 이미지는 base64로 인코딩된 문자열 배열이다.<br>
+    ```
+    sql
+    ```
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            category:
+              $ref: '../schemas/category.yaml'
+            title:
+              $ref: '../schemas/title.yaml'
+            content:
+              $ref: '../schemas/content.yaml'
+            images:
+              type: array
+              items:
+                $ref: '../schemas/image.yaml'
+  '201':
+    description: Created
+  default:
+      description: Error
+      content:
+        application/json:
+          schema:
+            $ref: '../schemas/error.yaml'
+

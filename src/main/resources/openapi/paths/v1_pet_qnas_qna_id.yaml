@@ -1,0 +1,73 @@
+get:
+  summary: 펫연구소-Q&A-상세(작성중)
+  tags:
+    - 펫연구소-Q&A-검색(118p)
+  description: |
+    ```
+    ```
+  security:
+    - bearerAuth: [ ]
+  parameters:
+    - name: qna_id
+      in: path
+      required: true
+      description: 장소 아이디
+      schema:
+        $ref: '../schemas/qnaId.yaml'
+  responses:
+    '200':
+      description: Ok
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              type: object
+              description: 랭킹
+              properties:
+                qna_id:
+                  $ref: '../schemas/qnaId.yaml'
+                category:
+                  $ref: '../schemas/category.yaml'
+                title:
+                  $ref: '../schemas/title.yaml'
+                content:
+                  $ref: '../schemas/content.yaml'
+                image_urls:
+                  type: array
+                  items:
+                    $ref: '../schemas/imageUrl.yaml'
+    default:
+      description: Error
+      content:
+        application/json:
+          schema:
+            $ref: '../schemas/error.yaml'
+post:
+  summary: 펫연구소-Q&A-상세-댓글추가(작성중)
+  tags:
+    - 펫연구소-Q&A-댓글작성(127p)
+  description: |
+    ```
+    ```
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            content: 
+              $ref: '../schemas/content.yaml'
+            images:
+              type: array
+              items:
+                $ref: '../schemas/image.yaml'
+  '201':
+    description: Created
+  default:
+    description: Error
+    content:
+      application/json:
+        schema:
+          $ref: '../schemas/error.yaml'

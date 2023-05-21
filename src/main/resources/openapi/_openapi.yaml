@@ -104,8 +104,17 @@ paths:
   /v1/pet-contents: #팻미 연구소 콘텐츠 목록
     $ref: './paths/v1_pet_contents.yaml'
 
+  /v1/pet-qnas: #팻미 연구소 Q&A 목록
+    $ref: './paths/v1_pet_qnas.yaml'
+
+  /v1/pet-qnas/{qna_id}: #팻미 연구소 Q&A 상세
+    $ref: './paths/v1_pet_qnas_qna_id.yaml'
+
   /v1/places/{place_id}: #장소 상세
     $ref: './paths/v1_places_place_id.yaml'
+
+  /v1/pet-contents/{contentId}: #팻미 연구소 콘텐츠 상세
+    $ref: './paths/v1_pet_contents_content_id.yaml'
 
   # /v1/reviews/{review_id}:
     # $ref: './paths/v1_reviews_reviewId.yaml'
