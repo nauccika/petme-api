@@ -1732,7 +1732,7 @@ paths:
         SELECT id, category, title, content, writer, write_time,
            (SELECT count(1) FROM tb_petme_qna b WHERE parent_id = a.id) AS comment_count
           FROM tb_petme_qna a
-         WHERE parent_id is null AND use_yn = 'y'
+         WHERE parent_id = 0 AND use_yn = 'y'
          ORDER BY register_time DESC;
         ```
       parameters:
@@ -1789,8 +1789,12 @@ paths:
       description: |
         121p Q&A 작성<br>
         업로드 이미지는 base64로 인코딩된 문자열 배열이다.<br>
+        tb_file에 tb_petme_qna_id 참조가 없다.<br>
         ```
-        sql
+        -- qan 추가
+          INSERT INTO tb_petme_qna
+          (tb_user_id, category, title, content, writer, write_time, read_count, parent_id, `order`, `depth`, use_yn, modify_time, register_time)
+          VALUES(39, '사료 | 간식', '8월 포메가 심장이 크데요...', '8월 포메가 심장이 크데요...', '루피', now(), 0, 0, 0, 0, 'y', now(), now());
         ```
       requestBody:
         content:
@@ -1868,7 +1872,12 @@ paths:
       tags:
         - 펫연구소-Q&A-댓글작성(127p)
       description: |
+        128p Q&A 댓글 작성<br>
+        tb_file 테이블에 tb_petme_qna_id 필드가 없다.<br>
         ```
+        INSERT INTO tb_petme_qna
+        (tb_user_id, content, writer, write_time, read_count, parent_id, `order`, `depth`, use_yn, modify_time, register_time)
+        VALUES(39, '8월 포메가 심장이 크데요...', '아소카', now(), 0, 3, 1, 1, 'y', now(), now());
         ```
       requestBody:
         required: true

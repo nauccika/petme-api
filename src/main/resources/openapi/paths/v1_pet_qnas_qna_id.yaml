@@ -48,7 +48,12 @@ post:
   tags:
     - 펫연구소-Q&A-댓글작성(127p)
   description: |
+    128p Q&A 댓글 작성<br>
+    tb_file 테이블에 tb_petme_qna_id 필드가 없다.<br>
     ```
+    INSERT INTO tb_petme_qna
+    (tb_user_id, content, writer, write_time, read_count, parent_id, `order`, `depth`, use_yn, modify_time, register_time)
+    VALUES(39, '8월 포메가 심장이 크데요...', '아소카', now(), 0, 3, 1, 1, 'y', now(), now());
     ```
   requestBody:
     required: true
