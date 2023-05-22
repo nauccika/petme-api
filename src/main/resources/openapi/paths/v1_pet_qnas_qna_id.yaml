@@ -4,6 +4,38 @@ get:
     - 펫연구소-Q&A-검색(118p)
   description: |
     ```
+    WITH RECURSIVE CTS AS (
+    SELECT  id
+    	   , category
+    	   , title
+           , content
+           , parent_id
+           , `depth`
+           , CAST(id as CHAR(100)) lvl
+    FROM tb_petme_qna
+    WHERE parent_id = 0
+      AND id = 2
+    UNION ALL
+    SELECT  b.id
+    	   , b.category
+    	   , b.title
+           , b.content
+           , b.parent_id
+           , b.`depth`
+           , CONCAT(c.lvl, ",", b.id) lvl
+    FROM tb_petme_qna b
+    INNER JOIN cts c
+    ON b.parent_id = c.id
+    )
+    SELECT id AS qna_id
+        , category
+        , title
+          , content
+          , parent_id
+          , `depth`
+          , lvl
+    FROM cts
+    ORDER BY lvl;
     ```
   security:
     - bearerAuth: [ ]

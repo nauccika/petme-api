@@ -1824,9 +1824,7 @@ paths:
       summary: 펫연구소-Q&A-상세(작성중)
       tags:
         - 펫연구소-Q&A-검색(118p)
-      description: |
-        ```
-        ```
+      description: "```\nWITH RECURSIVE CTS AS (\nSELECT  id\n\t   , category\n\t   , title\n       , content\n       , parent_id\n       , `depth`\n       , CAST(id as CHAR(100)) lvl\nFROM tb_petme_qna\nWHERE parent_id = 0\n  AND id = 2\nUNION ALL\nSELECT  b.id\n\t   , b.category\n\t   , b.title\n       , b.content\n       , b.parent_id\n       , b.`depth`\n       , CONCAT(c.lvl, \",\", b.id) lvl\nFROM tb_petme_qna b\nINNER JOIN cts c\nON b.parent_id = c.id\n)\nSELECT id AS qna_id\n    , category\n    , title\n      , content\n      , parent_id\n      , `depth`\n      , lvl\nFROM cts\nORDER BY lvl;\n```\n"
       security:
         - bearerAuth: []
       parameters:
