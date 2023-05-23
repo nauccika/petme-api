@@ -87,6 +87,13 @@ post:
     (tb_user_id, content, writer, write_time, read_count, parent_id, `order`, `depth`, use_yn, modify_time, register_time)
     VALUES(39, '8월 포메가 심장이 크데요...', '아소카', now(), 0, 3, 1, 1, 'y', now(), now());
     ```
+  parameters:
+    - name: qna_id
+      in: path
+      required: true
+      description: 장소 아이디
+      schema:
+        $ref: '../schemas/qnaId.yaml'
   requestBody:
     required: true
     content:
@@ -97,14 +104,13 @@ post:
             content: 
               $ref: '../schemas/content.yaml'
             images:
-              type: array
-              items:
-                $ref: '../schemas/image.yaml'
-  '201':
-    description: Created
-  default:
-    description: Error
-    content:
-      application/json:
-        schema:
-          $ref: '../schemas/error.yaml'
+              $ref: '../schemas/images.yaml'
+  responses:
+    '201':
+      description: Created
+    default:
+      description: Error
+      content:
+        application/json:
+          schema:
+            $ref: '../schemas/error.yaml'

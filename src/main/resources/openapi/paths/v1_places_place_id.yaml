@@ -5,6 +5,109 @@ get:
   description: |
     91p 장소상세-홈
     ```
+    -- 주간/월간 랭킹 시작
+    SET @input_business_gubun = "동물병원";
+    SET @input_street_name_address = "서울 강남구%";
+    SET @input_longitude = 127.027528;
+    SET @input_latitude = 37.497637;
+    SET @input_offset = 0;
+    SET @input_place_id = 4;
+    -- DATE(a.modify_time) = DATE('2023-05-19') or DATE(a.modify_time) = DATE(NOW())
+
+    CREATE TEMPORARY TABLE IF NOT EXISTS tb_temp_target_place AS (
+      SELECT 
+          PLACE.id, 
+          (TRIM(PLACE.ranking) + 0) AS ranking, 
+          (IFNULL(PLACE.blog_review_count, 0) + IFNULL(PLACE.visitor_review_count, 0)) AS total_review_count, 
+          @rest_meter := ROUND(ST_Distance_Sphere(POINT(PLACE.longitude, PLACE.latitude), POINT(@input_longitude, @input_latitude))) AS dummy, 
+          IF (@rest_meter > 1000, CONCAT(CONVERT(ROUND(@rest_meter/1000, 1), CHAR), 'km'), 
+            CONCAT(CONVERT(@rest_meter, CHAR), 'm')) AS distance, 
+          TRIM(PLACE.NAME) AS place_name, 
+          IF (PLACE.id NOT IN(SELECT b.id FROM tb_file a, tb_place b WHERE b.id = a.tb_place_id), '', 
+            (SELECT 
+                CONCAT('http://', 
+                  (SELECT a.ip1 FROM tb_server a, tb_file b 
+                      WHERE a.id = b.tb_server_id AND b.tb_place_id = PLACE.id), full_path, '/', save_name)
+            FROM
+                tb_file
+            WHERE 
+                tb_place_id = PLACE.id AND gubun = 'image|장소-메인')) AS image_url 
+      FROM 
+          tb_place AS PLACE
+      WHERE 
+          PLACE.business_gubun = @input_business_gubun AND PLACE.street_name_address LIKE @input_street_name_address
+    );
+
+    SELECT rank_accumulate FROM (
+    SELECT 
+      (@rownum := @rownum + 1) AS rank_accumulate, 
+      AVG(a.grade) AS average, 
+      b.id, 
+      b.place_name
+    FROM
+      tb_review a, tb_temp_target_place b, 
+      (SELECT @rownum := 0) AS c 
+    WHERE 
+      a.tb_place_id = b.id
+    GROUP BY b.id ORDER BY average DESC
+    ) AS X WHERE X.id = @input_place_id;
+
+
+    SELECT rank_weekly FROM (
+    SELECT 
+      (@rownum := @rownum + 1) AS rank_weekly, 
+      AVG(a.grade) AS average, 
+      b.id, 
+      b.place_name
+    FROM
+      tb_review a, tb_temp_target_place b, 
+      (SELECT @rownum := 0) AS c 
+    WHERE 
+      a.tb_place_id = b.id AND YEARWEEK(a.modify_time) = YEARWEEK('2023-05-19')
+    GROUP BY b.id ORDER BY average DESC
+    ) AS X WHERE X.id = @input_place_id;
+
+    SELECT rank_monthly FROM (
+    SELECT 
+      (@rownum := @rownum + 1) AS rank_monthly, 
+      AVG(a.grade) AS average, 
+      b.id, 
+      b.place_name
+    FROM
+      tb_review a, tb_temp_target_place b, 
+      (SELECT @rownum := 0) AS c 
+    WHERE 
+      a.tb_place_id = b.id AND MONTH(a.modify_time) = MONTH('2023-05-19')
+    GROUP BY b.id ORDER BY average DESC
+    ) AS X WHERE X.id = @input_place_id;
+
+    DROP TEMPORARY TABLE tb_temp_target_place;
+    -- 주간/월간 랭킹 끝
+
+    -- 장소 상세
+    SET @input_place_id = 4;
+    SELECT 
+      PLACE.id AS place_id,
+      IF (PLACE.id NOT IN(SELECT b.id FROM tb_file a, tb_place b WHERE b.id = a.tb_place_id), '', 
+          (SELECT 
+            CONCAT('http://', 
+                (SELECT distinct a.ip1 FROM tb_server a, tb_file b 
+                  WHERE a.id = b.tb_server_id AND b.tb_place_id = PLACE.id), full_path, '/', save_name)
+          FROM
+            tb_file 
+          WHERE 
+            tb_place_id = PLACE.id AND gubun = 'image|장소-업체')) AS company_image_url,
+      PLACE.phone,
+      (SELECT content FROM tb_place_business_hours WHERE tb_place_id = @input_place_id) AS sales_hour, 
+      PLACE.information_use,
+      PLACE.payment_method,
+      PLACE.content,
+      PLACE.street_name_address,
+      PLACE.lot_number_address,
+      PLACE.way_to_come1
+    FROM 
+      tb_place AS PLACE 
+    WHERE PLACE.id = @input_place_id;
     ```
   parameters:
     - name: place_id
@@ -26,66 +129,24 @@ get:
               properties:
                 place_id:
                   $ref: '../schemas/placeId.yaml'
-                place_name:
-                  $ref: '../schemas/placeName.yaml'
-                ranking:
-                  $ref: '../schemas/ranking.yaml'
-                daily_ranking:
-                  $ref: '../schemas/dailyRanking.yaml'
-                weekly_ranking:
-                  $ref: '../schemas/weeklyRanking.yaml'
-                monthly_ranking:
-                  $ref: '../schemas/monthlyRanking.yaml'
-                blog_review_count:
-                  $ref: '../schemas/blogReviewCount.yaml'
-                visitor_review_count:
-                  $ref: '../schemas/visitorReviewCount.yaml'
+                company_image_url:
+                  $ref: '../schemas/companyImageUrl.yaml'
+                phone:
+                  $ref: '../schemas/phone.yaml'
+                sales_hour:
+                  $ref: '../schemas/salesHour.yaml'
+                information_use:
+                  $ref: '../schemas/informationUse.yaml'
+                payment_method:
+                  $ref: '../schemas/paymentMethod.yaml'
+                content:
+                  $ref: '../schemas/content.yaml'
                 street_name_address:
                   $ref: '../schemas/streetNameAddress.yaml'
                 lot_number_address:
                   $ref: '../schemas/lotNumberAddress.yaml'
                 way_to_come1:
                   $ref: '../schemas/wayToCome1.yaml'
-                way_to_come2:
-                  $ref: '../schemas/wayToCome2.yaml'
-                zipcode:
-                  $ref: '../schemas/zipcode.yaml'
-                distance:
-                  $ref: '../schemas/category.yaml'
-                total_review_count:
-                  $ref: '../schemas/totalReviewCount.yaml'
-                phone:
-                  $ref: '../schemas/phone.yaml'
-                payment_method:
-                  $ref: '../schemas/paymentMethod.yaml'
-                content:
-                  $ref: '../schemas/content.yaml'
-                information_use:
-                  $ref: '../schemas/informationUse.yaml'
-                homepage_url:
-                  $ref: '../schemas/homepageUrl.yaml'
-                blog_url:
-                  $ref: '../schemas/blogUrl.yaml'
-                instagram_url:
-                  $ref: '../schemas/instagramUrl.yaml'
-                facebook_url:
-                  $ref: '../schemas/facebookUrl.yaml'
-                youtube_url:
-                  $ref: '../schemas/youtubeUrl.yaml'
-                business_gubun:
-                  $ref: '../schemas/businessGubun.yaml'
-                business_hour:
-                  $ref: '../schemas/businessHour.yaml'
-                hashtag:
-                  $ref: '../schemas/hashtag.yaml'
-                latitude:
-                  $ref: '../schemas/latitude.yaml'
-                longitude:
-                  $ref: '../schemas/longitude.yaml'
-                place_summary:
-                  $ref: '../schemas/placeSummary.yaml'
-                image_url:
-                  $ref: '../schemas/imageUrl.yaml'
     default:
       description: Error
       content:

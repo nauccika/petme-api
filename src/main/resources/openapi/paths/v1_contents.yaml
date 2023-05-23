@@ -1,0 +1,35 @@
+get:
+  tags:
+    - 메인-검색(65p)
+  summary: 메인-검색(작업중)
+  description: |
+    65p 메인-검색
+  parameters:
+    - name: keyword
+      in: query
+      description: 검색어
+      required: true
+      schema:
+        $ref: '../schemas/keyword.yaml'
+    - name: sido
+      in: query
+      description: 지역(시/도)
+      required: false
+      schema:
+        $ref: '../schemas/sido.yaml'
+  responses:
+    '200':
+      description: Ok
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: './comp_places.yaml'
+              - $ref: './comp_contents.yaml'
+    default:
+      description: Error
+      content:
+        application/json:
+          schema:
+            $ref: '../schemas/error.yaml'  
+  

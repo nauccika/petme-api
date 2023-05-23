@@ -1,0 +1,14 @@
+type: array
+items:
+  type: object
+  properties:
+    content_id:
+    $ref: '../schemas/contentId.yaml'
+  category:
+    $ref: '../schemas/category.yaml'
+  title:
+    $ref: '../schemas/title.yaml'
+  hashtag:
+    $ref: '../schemas/hashtag.yaml'
+  image_url:
+    $ref: '../schemas/imageUrl.yaml'

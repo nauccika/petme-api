@@ -86,9 +86,10 @@ post:
               type: array
               items:
                 $ref: '../schemas/image.yaml'
-  '201':
-    description: Created
-  default:
+  responses:
+    '201':
+      description: Created
+    default:
       description: Error
       content:
         application/json:

@@ -94,7 +94,7 @@ paths:
 
   /v1/reviews: #메인-베스트 리뷰
     $ref: './paths/v1_reviews.yaml'
-
+  
   /v2/reviews: #리뷰-리뷰 목록
     $ref: './paths/v2_reviews.yaml'
 
@@ -113,8 +113,11 @@ paths:
   /v1/places/{place_id}: #장소 상세
     $ref: './paths/v1_places_place_id.yaml'
 
-  /v1/pet-contents/{contentId}: #팻미 연구소 콘텐츠 상세
+  /v1/pet-contents/{content_id}: #팻미 연구소 콘텐츠 상세
     $ref: './paths/v1_pet_contents_content_id.yaml'
+
+  # /v1/contents: #메인-검색
+    # $ref: './paths/v1_contents.yaml'
 
   # /v1/reviews/{review_id}:
     # $ref: './paths/v1_reviews_reviewId.yaml'

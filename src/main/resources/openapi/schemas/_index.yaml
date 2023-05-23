@@ -16,7 +16,9 @@ category:
 code:
   $ref: ./code.yaml
 commentCount:
-  $ref: ./CommentCount.yaml
+  $ref: ./commentCount.yaml
+companyImageUrl:
+  $ref: ./companyImageUrl.yaml
 content:
   $ref: ./content.yaml
 contentId:
@@ -49,10 +51,12 @@ htmlYn:
   $ref: ./htmlYn.yaml
 imageUrl:
   $ref: ./imageUrl.yaml
+images:
+  $ref: ./images.yaml
 informationUse:
   $ref: ./informationUse.yaml
 instagramUrl:
-  $ref: ./informationUse.yaml
+  $ref: ./instagramUrl.yaml
 keyword:
   $ref: ./keyword.yaml
 latitude:
@@ -131,6 +135,8 @@ reviewCount:
   $ref: ./reviewCount.yaml
 reviewId:
   $ref: ./reviewId.yaml
+salesHour:
+  $ref: ./salesHour.yaml
 sido:
   $ref: ./sido.yaml
 sigungu:

@@ -1,0 +1,20 @@
+type: array
+items:
+  type: object
+  properties:
+    business_gubun:
+      $ref: '../schemas/businessGubun.yaml'
+    total_count:
+      $ref: '../schemas/totalCount.yaml'
+    place_id:
+      $ref: '../schemas/placeId.yaml'
+    place_name:
+      $ref: '../schemas/placeName.yaml'
+    ranking:
+      $ref: '../schemas/ranking.yaml'
+    total_review_count:
+      $ref: '../schemas/totalReviewCount.yaml'
+    distance:
+      $ref: '../schemas/distance.yaml'
+    image_url:
+      $ref: '../schemas/imageUrl.yaml'

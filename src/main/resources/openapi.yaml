@@ -921,7 +921,7 @@ paths:
                     write_time:
                       $ref: '#/components/schemas/writeTime'
                     comment_count:
-                      $ref: '#/paths/~1v1~1pet-qnas/get/responses/200/content/application~1json/schema/items/properties/comment_count'
+                      $ref: '#/components/schemas/commentCount'
                     image_url:
                       $ref: '#/components/schemas/imageUrl'
         default:
@@ -1770,8 +1770,7 @@ paths:
                     write_time:
                       $ref: '#/components/schemas/writeTime'
                     comment_count:
-                      type: integer
-                      description: 댓글 수
+                      $ref: '#/components/schemas/commentCount'
                     image_url:
                       $ref: '#/components/schemas/imageUrl'
         default:
@@ -1781,8 +1780,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/error'
     post:
-      '201':
-        description: Created
       tags:
         - 펫연구소-Q&A-작성(120p)
       summary: 펫연구소-Q&A-작성(작성중)
@@ -1813,12 +1810,15 @@ paths:
                   items:
                     type: string
                     description: base64 인코딩된 업로드 이미지
-      default:
-        description: Error
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/error'
+      responses:
+        '201':
+          description: Created
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
   '/v1/pet-qnas/{qna_id}':
     get:
       summary: 펫연구소-Q&A-상세(작성중)
@@ -1864,8 +1864,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/error'
     post:
-      '201':
-        description: Created
       summary: 펫연구소-Q&A-상세-댓글추가(작성중)
       tags:
         - 펫연구소-Q&A-댓글작성(127p)
@@ -1877,6 +1875,13 @@ paths:
         (tb_user_id, content, writer, write_time, read_count, parent_id, `order`, `depth`, use_yn, modify_time, register_time)
         VALUES(39, '8월 포메가 심장이 크데요...', '아소카', now(), 0, 3, 1, 1, 'y', now(), now());
         ```
+      parameters:
+        - name: qna_id
+          in: path
+          required: true
+          description: 장소 아이디
+          schema:
+            $ref: '#/components/schemas/qnaId'
       requestBody:
         required: true
         content:
@@ -1887,15 +1892,16 @@ paths:
                 content:
                   $ref: '#/components/schemas/content'
                 images:
-                  type: array
-                  items:
-                    $ref: '#/paths/~1v1~1pet-qnas/post/requestBody/content/application~1json/schema/properties/images/items'
-      default:
-        description: Error
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/error'
+                  $ref: '#/components/schemas/images'
+      responses:
+        '201':
+          description: Created
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
   '/v1/places/{place_id}':
     get:
       tags:
@@ -1904,6 +1910,109 @@ paths:
       description: |
         91p 장소상세-홈
         ```
+        -- 주간/월간 랭킹 시작
+        SET @input_business_gubun = "동물병원";
+        SET @input_street_name_address = "서울 강남구%";
+        SET @input_longitude = 127.027528;
+        SET @input_latitude = 37.497637;
+        SET @input_offset = 0;
+        SET @input_place_id = 4;
+        -- DATE(a.modify_time) = DATE('2023-05-19') or DATE(a.modify_time) = DATE(NOW())
+
+        CREATE TEMPORARY TABLE IF NOT EXISTS tb_temp_target_place AS (
+          SELECT 
+              PLACE.id, 
+              (TRIM(PLACE.ranking) + 0) AS ranking, 
+              (IFNULL(PLACE.blog_review_count, 0) + IFNULL(PLACE.visitor_review_count, 0)) AS total_review_count, 
+              @rest_meter := ROUND(ST_Distance_Sphere(POINT(PLACE.longitude, PLACE.latitude), POINT(@input_longitude, @input_latitude))) AS dummy, 
+              IF (@rest_meter > 1000, CONCAT(CONVERT(ROUND(@rest_meter/1000, 1), CHAR), 'km'), 
+                CONCAT(CONVERT(@rest_meter, CHAR), 'm')) AS distance, 
+              TRIM(PLACE.NAME) AS place_name, 
+              IF (PLACE.id NOT IN(SELECT b.id FROM tb_file a, tb_place b WHERE b.id = a.tb_place_id), '', 
+                (SELECT 
+                    CONCAT('http://', 
+                      (SELECT a.ip1 FROM tb_server a, tb_file b 
+                          WHERE a.id = b.tb_server_id AND b.tb_place_id = PLACE.id), full_path, '/', save_name)
+                FROM
+                    tb_file
+                WHERE 
+                    tb_place_id = PLACE.id AND gubun = 'image|장소-메인')) AS image_url 
+          FROM 
+              tb_place AS PLACE
+          WHERE 
+              PLACE.business_gubun = @input_business_gubun AND PLACE.street_name_address LIKE @input_street_name_address
+        );
+
+        SELECT rank_accumulate FROM (
+        SELECT 
+          (@rownum := @rownum + 1) AS rank_accumulate, 
+          AVG(a.grade) AS average, 
+          b.id, 
+          b.place_name
+        FROM
+          tb_review a, tb_temp_target_place b, 
+          (SELECT @rownum := 0) AS c 
+        WHERE 
+          a.tb_place_id = b.id
+        GROUP BY b.id ORDER BY average DESC
+        ) AS X WHERE X.id = @input_place_id;
+
+
+        SELECT rank_weekly FROM (
+        SELECT 
+          (@rownum := @rownum + 1) AS rank_weekly, 
+          AVG(a.grade) AS average, 
+          b.id, 
+          b.place_name
+        FROM
+          tb_review a, tb_temp_target_place b, 
+          (SELECT @rownum := 0) AS c 
+        WHERE 
+          a.tb_place_id = b.id AND YEARWEEK(a.modify_time) = YEARWEEK('2023-05-19')
+        GROUP BY b.id ORDER BY average DESC
+        ) AS X WHERE X.id = @input_place_id;
+
+        SELECT rank_monthly FROM (
+        SELECT 
+          (@rownum := @rownum + 1) AS rank_monthly, 
+          AVG(a.grade) AS average, 
+          b.id, 
+          b.place_name
+        FROM
+          tb_review a, tb_temp_target_place b, 
+          (SELECT @rownum := 0) AS c 
+        WHERE 
+          a.tb_place_id = b.id AND MONTH(a.modify_time) = MONTH('2023-05-19')
+        GROUP BY b.id ORDER BY average DESC
+        ) AS X WHERE X.id = @input_place_id;
+
+        DROP TEMPORARY TABLE tb_temp_target_place;
+        -- 주간/월간 랭킹 끝
+
+        -- 장소 상세
+        SET @input_place_id = 4;
+        SELECT 
+          PLACE.id AS place_id,
+          IF (PLACE.id NOT IN(SELECT b.id FROM tb_file a, tb_place b WHERE b.id = a.tb_place_id), '', 
+              (SELECT 
+                CONCAT('http://', 
+                    (SELECT distinct a.ip1 FROM tb_server a, tb_file b 
+                      WHERE a.id = b.tb_server_id AND b.tb_place_id = PLACE.id), full_path, '/', save_name)
+              FROM
+                tb_file 
+              WHERE 
+                tb_place_id = PLACE.id AND gubun = 'image|장소-업체')) AS company_image_url,
+          PLACE.phone,
+          (SELECT content FROM tb_place_business_hours WHERE tb_place_id = @input_place_id) AS sales_hour, 
+          PLACE.information_use,
+          PLACE.payment_method,
+          PLACE.content,
+          PLACE.street_name_address,
+          PLACE.lot_number_address,
+          PLACE.way_to_come1
+        FROM 
+          tb_place AS PLACE 
+        WHERE PLACE.id = @input_place_id;
         ```
       parameters:
         - name: place_id
@@ -1925,74 +2034,31 @@ paths:
                   properties:
                     place_id:
                       $ref: '#/components/schemas/placeId'
-                    place_name:
-                      $ref: '#/components/schemas/placeNam'
-                    ranking:
-                      $ref: '#/components/schemas/ranking'
-                    daily_ranking:
-                      $ref: '#/components/schemas/dailyRanking'
-                    weekly_ranking:
-                      $ref: '#/components/schemas/weelkyRanking'
-                    monthly_ranking:
-                      $ref: '#/components/schemas/monthlyRanking'
-                    blog_review_count:
-                      $ref: '#/components/schemas/blogReviewCount'
-                    visitor_review_count:
-                      $ref: '#/components/schemas/visitorReviewCount'
+                    company_image_url:
+                      $ref: '#/components/schemas/companyImageUrl'
+                    phone:
+                      $ref: '#/components/schemas/phone'
+                    sales_hour:
+                      $ref: '#/components/schemas/salesHour'
+                    information_use:
+                      $ref: '#/components/schemas/informationUse'
+                    payment_method:
+                      $ref: '#/components/schemas/paymentMethod'
+                    content:
+                      $ref: '#/components/schemas/content'
                     street_name_address:
                       $ref: '#/components/schemas/streetNameAddress'
                     lot_number_address:
                       $ref: '#/components/schemas/lotNumberAddress'
                     way_to_come1:
                       $ref: '#/components/schemas/wayToCome1'
-                    way_to_come2:
-                      $ref: '#/components/schemas/wayToCome2'
-                    zipcode:
-                      $ref: '#/components/schemas/zipcode'
-                    distance:
-                      $ref: '#/components/schemas/category'
-                    total_review_count:
-                      $ref: '#/components/schemas/totalReviewCount'
-                    phone:
-                      $ref: '#/components/schemas/phone'
-                    payment_method:
-                      $ref: '#/components/schemas/paymentMethod'
-                    content:
-                      $ref: '#/components/schemas/content'
-                    information_use:
-                      $ref: '#/components/schemas/instagramUrl'
-                    homepage_url:
-                      $ref: '#/components/schemas/homepageUrl'
-                    blog_url:
-                      $ref: '#/components/schemas/blogUrl'
-                    instagram_url:
-                      type: string
-                      description: 인스타그램 주소
-                    facebook_url:
-                      $ref: '#/components/schemas/facebookUrl'
-                    youtube_url:
-                      $ref: '#/components/schemas/youtubeUrl'
-                    business_gubun:
-                      $ref: '#/components/schemas/businessGubun'
-                    business_hour:
-                      $ref: '#/components/schemas/businessHour'
-                    hashtag:
-                      $ref: '#/components/schemas/hashtag'
-                    latitude:
-                      $ref: '#/components/schemas/latitude'
-                    longitude:
-                      $ref: '#/components/schemas/longitude'
-                    place_summary:
-                      $ref: '#/components/schemas/placeSummary'
-                    image_url:
-                      $ref: '#/components/schemas/imageUrl'
         default:
           description: Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
-  '/v1/pet-contents/{contentId}':
+  '/v1/pet-contents/{content_id}':
     get:
       tags:
         - 펫연구소-콘텐츠(115p)
@@ -2117,6 +2183,9 @@ components:
     commentCount:
       type: integer
       description: 댓글 수
+    companyImageUrl:
+      type: string
+      description: 장소 이미지 주소
     content:
       type: string
       description: 내용
@@ -2180,11 +2249,17 @@ components:
     imageUrl:
       type: string
       description: 장소 이미지 주소
+    images:
+      type: array
+      items:
+        type: string
+        description: base64 인코딩된 업로드 이미지
     informationUse:
-      $ref: '#/components/schemas/instagramUrl'
-    instagramUrl:
       type: string
       description: 이용안내/정보(부가서비스포함)
+    instagramUrl:
+      type: string
+      description: 인스타그램 주소
     keyword:
       type: string
       description: 키워드
@@ -2335,6 +2410,9 @@ components:
     reviewId:
       type: integer
       description: 리뷰 아이디
+    salesHour:
+      type: string
+      description: 영업 시간
     sido:
       type: string
       description: 시도
