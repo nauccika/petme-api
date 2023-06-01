@@ -6,7 +6,7 @@ put:
     37p 닉네임 수정
     ```
       UPDATE tb_user
-         SET user_name = '아소카'
+         SET user_name = :user_name
        WHERE id = 39;
     ```
   security:
@@ -21,7 +21,7 @@ put:
             user_name:
               $ref: '../schemas/userName.yaml'
           required:
-            - userName
+            - user_name
   responses:
     '200':
       description: Ok

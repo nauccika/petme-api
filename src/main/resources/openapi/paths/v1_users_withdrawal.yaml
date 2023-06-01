@@ -6,13 +6,14 @@ post:
     41p 회원 탈퇴<br>
     회원 탈퇴 처리 후 로그아웃 처리한다<br>
     ```
+    -- :tb_user_id는 인증 토큰에서 참조
     UPDATE tb_user 
        SET use_yn = 'n',
            withdrawal_date = now(),
-           withdrawal_cause = '리뷰가 도움이 되지 않아서',
+           withdrawal_cause = :withrawal_cause,
            receive_information_yn = 'n',
            modify_time = now()
-     WHERE id = 39;
+     WHERE id = :tb_user_id;
     ```
   security:
     - bearerAuth: [ ]

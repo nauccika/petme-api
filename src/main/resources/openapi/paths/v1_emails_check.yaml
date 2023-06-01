@@ -8,7 +8,7 @@ get:
     ```
     SELECT COUNT(1)
       FROM tb_user
-     WHERE email = 'petme@petme.kr';
+     WHERE email = :email;
     ```
   parameters:
     - name: email

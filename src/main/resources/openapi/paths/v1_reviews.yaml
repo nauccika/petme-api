@@ -5,39 +5,44 @@ get:
   description: | 
     62p 베스트 리뷰
     ```
-      SELECT
-          X.place_id,
-          X.ranking,
-          X.writer,
-          X.register_time,
-          X.place_name,
-          X.content,
-          X.image_url
-      FROM
-      (
-        SELECT       
-            a.id AS place_id,
-            a.ranking,
-            b.writer,
-            b.register_time,
-            b.content,
-            TRIM(a.NAME) AS place_name, 
-            if (a.id NOT IN(SELECT bb.id FROM tb_file aa, tb_place bb WHERE bb.id = aa.tb_place_id), '',
-              (SELECT 
-                  CONCAT('http://', (SELECT z.ip1 FROM tb_server z, tb_file y WHERE z.id = y.tb_server_id AND y.tb_place_id = a.id), full_path, '/', save_name) 
-              FROM tb_file WHERE tb_place_id = a.id)) AS image_url
-        FROM 
-            tb_place AS a,
-            tb_review AS b,
-            (SELECT @rest_meter := 0) AS c,
-            (SELECT @input_longitude := 127.027528) AS d,
-            (SELECT @input_latitude := 37.497637) AS e
-        WHERE 
-            -- (a.business_gubun = '동물병원' AND a.street_name_address like '서울 강남구%') AND
-            ST_Distance_Sphere(POINT(a.longitude, a.latitude), POINT(@input_longitude, @input_latitude)) <= 2000	
-            AND a.id = b.tb_place_id
-        ORDER BY a.blog_review_count DESC
-      ) X LIMIT 4 OFFSET 0;
+    CREATE TEMPORARY TABLE IF NOT EXISTS tb_temp_target_place AS (
+      SELECT 
+        PLACE.id, 
+        (TRIM(PLACE.ranking) + 0) AS ranking, 
+        (IFNULL(PLACE.blog_review_count, 0) + IFNULL(PLACE.visitor_review_count, 0)) AS total_review_count, 
+        @rest_meter := ROUND(ST_Distance_Sphere(POINT(PLACE.longitude, PLACE.latitude), POINT($req_longitude, $req_latitude))) AS dummy, 
+        IF (@rest_meter > 1000, CONCAT(CONVERT(ROUND(@rest_meter/1000, 1), CHAR), 'km'), 
+          CONCAT(CONVERT(@rest_meter, CHAR), 'm')) AS distance, 
+        TRIM(PLACE.NAME) AS place_name, 
+        IF (PLACE.id NOT IN(SELECT b.id FROM tb_file a, tb_place b WHERE b.id = a.tb_place_id), '', 
+          (SELECT 
+            CONCAT('http://', 
+              (SELECT DISTINCT a.ip1 FROM tb_server a, tb_file b 
+                WHERE a.id = b.tb_server_id AND b.tb_place_id = PLACE.id), full_path, '/', save_name)
+          FROM
+            tb_file
+          WHERE 
+            tb_place_id = PLACE.id AND gubun = 'image|리뷰-메인')) AS image_url
+      FROM 
+        tb_place AS PLACE
+      WHERE 
+        $query_param
+      ORDER BY ranking DESC
+    );
+  
+    -- SELECT * FROM tb_temp_target_place;
+    SELECT 
+      b.ranking, b.place_name, a.writer, a.visit_date, a.content, b.image_url
+    --	(	SELECT FROM tb_file WHERE tb_place_id = PLACE.id AND gubun = 'image|리뷰-메인'	) AS image_url
+    FROM 
+      tb_review a, tb_temp_target_place b 
+    WHERE 
+      a.tb_place_id = b.id
+    GROUP BY b.place_name
+    ORDER BY a.register_time ASC;
+    LIMIT 5 OFFSET 0;
+      
+    DROP TEMPORARY TABLE tb_temp_target_place;  
     ```
   parameters:
     - name: business_gubun
@@ -46,18 +51,6 @@ get:
       description: 장소 구분
       schema:
         $ref: '../schemas/businessGubun.yaml'
-    - name: sido
-      in: query
-      required: true
-      description: 시도
-      schema:
-        $ref: '../schemas/sido.yaml'
-    - name: sigungu
-      in: query
-      required: true
-      description: 시군구
-      schema:
-        $ref: '../schemas/sigungu.yaml'
     - name: page
       in: query
       required: true

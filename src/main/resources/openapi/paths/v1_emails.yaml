@@ -8,13 +8,13 @@ get:
       -- otp 검증
       SELECT otp
         FROM tb_otp
-       WHERE phone = '01012341234'
-         AND otp = '123456'
+       WHERE phone = :phone
+         AND otp = :otp
          AND expiration_time > NOW();
       -- email 조회
       SELECT email 
         FROM tb_user 
-       WHERE phone = '01012341234';
+       WHERE phone = :phone;
     ```
   parameters:
     - name: phone

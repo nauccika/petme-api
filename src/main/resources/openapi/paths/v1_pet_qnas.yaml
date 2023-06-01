@@ -66,9 +66,16 @@ post:
     tb_file에 tb_petme_qna_id 참조가 없다.<br>
     ```
     -- qan 추가
-      INSERT INTO tb_petme_qna
-      (tb_user_id, category, title, content, writer, write_time, read_count, parent_id, `order`, `depth`, use_yn, modify_time, register_time)
-      VALUES(39, '사료 | 간식', '8월 포메가 심장이 크데요...', '8월 포메가 심장이 크데요...', '루피', now(), 0, 0, 0, 0, 'y', now(), now());
+    :tb_user_id는 인증 토큰에서 참조한다.
+    :writer는 tb_user_id를 통해 구한다.
+    INSERT INTO tb_petme_qna
+    (tb_user_id, category, title, content, writer, write_time, read_count, parent_id, `order`, `depth`, use_yn, modify_time, register_time)
+    VALUES(:tb_user_id, :category, :title, :content, :writer, now(), 0, 0, 0, 0, 'y', now(), now());
+    -- 파일 추가
+    tb_qna_id 컬럼을 tb_file 테이블에 추가해야 한다.
+    INSERT INTO petme3.tb_file
+    (tb_server_id, tb_user_id, tb_qna_id, original_name, save_name, full_path, `size`, width, height, `depth`, hash_type, hash, mimetype, gubun, source, main_image_yn, exposure_order, encoding, use_yn, modify_time, register_time)
+    VALUES(:tb_server_id, :tb_user_id, :tb_qna_id, :original_name, :save_name, :full_path, :size, :width, :height, :depth, :hash_type, :hash, :mimetype, :gubun, :source, 'n', :exposure_order, :encoding, 'y', now(), now());
     ```
   requestBody:
     content:

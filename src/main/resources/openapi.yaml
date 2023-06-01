@@ -1413,7 +1413,50 @@ paths:
       tags:
         - 통합메인(61p)
       summary: 메인-베스트 리뷰 목록
-      description: "62p 베스트 리뷰\n```\n  SELECT\n      X.place_id,\n      X.ranking,\n      X.writer,\n      X.register_time,\n      X.place_name,\n      X.content,\n      X.image_url\n  FROM\n  (\n    SELECT       \n        a.id AS place_id,\n        a.ranking,\n        b.writer,\n        b.register_time,\n        b.content,\n        TRIM(a.NAME) AS place_name, \n        if (a.id NOT IN(SELECT bb.id FROM tb_file aa, tb_place bb WHERE bb.id = aa.tb_place_id), '',\n          (SELECT \n              CONCAT('http://', (SELECT z.ip1 FROM tb_server z, tb_file y WHERE z.id = y.tb_server_id AND y.tb_place_id = a.id), full_path, '/', save_name) \n          FROM tb_file WHERE tb_place_id = a.id)) AS image_url\n    FROM \n        tb_place AS a,\n        tb_review AS b,\n        (SELECT @rest_meter := 0) AS c,\n        (SELECT @input_longitude := 127.027528) AS d,\n        (SELECT @input_latitude := 37.497637) AS e\n    WHERE \n        -- (a.business_gubun = '동물병원' AND a.street_name_address like '서울 강남구%') AND\n        ST_Distance_Sphere(POINT(a.longitude, a.latitude), POINT(@input_longitude, @input_latitude)) <= 2000\t\n        AND a.id = b.tb_place_id\n    ORDER BY a.blog_review_count DESC\n  ) X LIMIT 4 OFFSET 0;\n```\n"
+      description: |
+        62p 베스트 리뷰
+        ```
+        CREATE TEMPORARY TABLE IF NOT EXISTS tb_temp_target_place AS (
+          SELECT 
+            PLACE.id, 
+            (TRIM(PLACE.ranking) + 0) AS ranking, 
+            (IFNULL(PLACE.blog_review_count, 0) + IFNULL(PLACE.visitor_review_count, 0)) AS total_review_count, 
+            @rest_meter := ROUND(ST_Distance_Sphere(POINT(PLACE.longitude, PLACE.latitude), POINT(127.027528, 37.497637))) AS dummy, 
+            IF (@rest_meter > 1000, CONCAT(CONVERT(ROUND(@rest_meter/1000, 1), CHAR), 'km'), 
+              CONCAT(CONVERT(@rest_meter, CHAR), 'm')) AS distance, 
+            TRIM(PLACE.NAME) AS place_name, 
+            IF (PLACE.id NOT IN(SELECT b.id FROM tb_file a, tb_place b WHERE b.id = a.tb_place_id), '', 
+              (SELECT 
+                CONCAT('http://', 
+                  (SELECT DISTINCT a.ip1 FROM tb_server a, tb_file b 
+                    WHERE a.id = b.tb_server_id AND b.tb_place_id = PLACE.id), full_path, '/', save_name)
+              FROM
+                tb_file
+              WHERE 
+                tb_place_id = PLACE.id AND gubun = 'image|리뷰-메인')) AS image_url
+          FROM 
+            tb_place AS PLACE
+          WHERE 
+            (PLACE.business_gubun = '동물병원' AND PLACE.street_name_address LIKE '서울 강남구%') OR 
+            ST_Distance_Sphere(POINT(PLACE.longitude, PLACE.latitude), POINT(127.027528, 37.497637)) <= 5000
+          ORDER BY ranking DESC
+        );
+
+        SELECT * FROM tb_temp_target_place;
+        SELECT 
+          b.ranking, b.place_name, a.writer, a.visit_date, a.content, b.image_url
+        --   (   SELECT FROM tb_file WHERE tb_place_id = PLACE.id AND gubun = 'image|리뷰-메인'   ) AS image_url
+        FROM 
+          tb_review a, tb_temp_target_place b 
+        WHERE 
+          a.tb_place_id = b.id
+        --   a.tb_place_id = b.id AND b.id = 4
+        GROUP BY b.place_name
+        ORDER BY a.register_time ASC;
+        -- LIMIT 1;
+          
+        DROP TEMPORARY TABLE tb_temp_target_place;
+        ```
       parameters:
         - name: business_gubun
           in: query
@@ -1421,18 +1464,6 @@ paths:
           description: 장소 구분
           schema:
             $ref: '#/components/schemas/businessGubun'
-        - name: sido
-          in: query
-          required: true
-          description: 시도
-          schema:
-            $ref: '#/components/schemas/sido'
-        - name: sigungu
-          in: query
-          required: true
-          description: 시군구
-          schema:
-            $ref: '#/components/schemas/sigungu'
         - name: page
           in: query
           required: true
@@ -1535,6 +1566,8 @@ paths:
                       $ref: '#/components/schemas/content'
                     place_name:
                       $ref: '#/components/schemas/placeNam'
+                    keyword:
+                      $ref: '#/components/schemas/keyword'
                     image_urls:
                       type: array
                       items:
@@ -1669,16 +1702,35 @@ paths:
       description: |
         62p 메인-팻 연구소 콘텐츠 목록
         ```
+        SET @input_referer = "https://statuesque-entremet-5ef58c.netlify.app/";
         SELECT 
-          a.id AS content_id, 
-          a.category,
-          a.title,
-          a.hashtag,
-          CONCAT('http://', b.ip1, c.full_path, '/', c.save_name) AS image_url
-          FROM tb_pet_raboratory a, tb_server b, tb_file c
-        WHERE c.tb_pet_raboratory_id = a.id
-        ORDER BY a.register_time DESC
-        LIMIT 0, 4; -- page, size
+          RAB.category,
+          RAB.title,
+          RAB.hashtag, 
+          IF (RAB.id NOT IN(SELECT b.id FROM tb_file a, tb_pet_raboratory b WHERE b.id = a.tb_pet_raboratory_id), '', 
+            (SELECT 
+              IF (STRCMP(@input_referer, 'https://statuesque-entremet-5ef58c.netlify.app/') = 0, 
+                CONCAT('api', full_path, '/', save_name), 
+                CONCAT('http://', 
+                    (SELECT DISTINCT a.ip1 FROM tb_server a, tb_file b 
+                        WHERE a.id = b.tb_server_id AND b.tb_pet_raboratory_id = RAB.id), full_path, '/',  '/', save_name))
+            FROM tb_file
+            WHERE   tb_pet_raboratory_id = RAB.id AND gubun = 'image|펫연구소-메인')) AS main_image_url,
+          IF (RAB.id NOT IN(SELECT b.id FROM tb_file a, tb_pet_raboratory b WHERE b.id = a.tb_pet_raboratory_id), '', 
+            (SELECT 
+              CONCAT('http://', 
+                  (SELECT DISTINCT a.ip1 FROM tb_server a, tb_file b 
+                      WHERE a.id = b.tb_server_id AND b.tb_pet_raboratory_id = RAB.id), full_path,  '/', save_name)
+            FROM
+              tb_file
+            WHERE 
+              tb_pet_raboratory_id = RAB.id AND gubun = 'image|펫연구소-상세')) AS sub_image_url
+        FROM 
+          tb_pet_raboratory AS RAB,
+          tb_file AS FILE
+        WHERE 
+          RAB.id = FILE.tb_pet_raboratory_id
+        GROUP BY RAB.title;
         ```
       parameters:
         - name: page
@@ -1704,15 +1756,15 @@ paths:
                   type: object
                   description: 랭킹
                   properties:
-                    content_id:
-                      $ref: '#/components/schemas/contentId'
                     category:
                       $ref: '#/components/schemas/category'
                     title:
                       $ref: '#/components/schemas/title'
                     hashtag:
                       $ref: '#/components/schemas/hashtag'
-                    image_url:
+                    main_image_url:
+                      $ref: '#/components/schemas/imageUrl'
+                    sub_image_url:
                       $ref: '#/components/schemas/imageUrl'
         default:
           description: Error
@@ -2052,47 +2104,6 @@ paths:
                       $ref: '#/components/schemas/lotNumberAddress'
                     way_to_come1:
                       $ref: '#/components/schemas/wayToCome1'
-        default:
-          description: Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
-  '/v1/pet-contents/{content_id}':
-    get:
-      tags:
-        - 펫연구소-콘텐츠(115p)
-      summary: 펫 연구소 콘텐트 상세(작성중)
-      description: |
-        117p 메인-팻 연구소 콘텐츠 상세
-        ```
-        ```
-      parameters:
-        - name: content_id
-          in: path
-          required: true
-          description: 콘텐츠 아이디
-          schema:
-            $ref: '#/components/schemas/contentId'
-      responses:
-        '200':
-          description: Ok
-          content:
-            application/json:
-              schema:
-                type: object
-                description: 랭킹
-                properties:
-                  content_id:
-                    $ref: '#/components/schemas/contentId'
-                  category:
-                    $ref: '#/components/schemas/category'
-                  title:
-                    $ref: '#/components/schemas/title'
-                  hashtag:
-                    $ref: '#/components/schemas/hashtag'
-                  image_url:
-                    $ref: '#/components/schemas/imageUrl'
         default:
           description: Error
           content:

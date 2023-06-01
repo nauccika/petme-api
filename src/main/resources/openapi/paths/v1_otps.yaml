@@ -6,7 +6,7 @@ post:
     휴대폰 인증을 위해 sms로 otp를 발송<br>
     ```
       INSERT INTO tb_otp(phone, otp, register_time)
-      VALUES ('01012341234', '123456', NOW());
+      VALUES (:phone, :otp, NOW());
     ```
   requestBody:
     required: true

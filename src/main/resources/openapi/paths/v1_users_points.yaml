@@ -2,7 +2,27 @@ get:
   tags:
     - 마이-포인트(46p)
   summary: 포인트 사용 내역
-  description: 47p 마이-포인트
+  description: | 
+    47p 마이-포인트<br>
+    ```
+    -- 사용 가능한 포인트
+    SELECT get_point - used_point AS remaining_point
+      FROM (
+    SELECT IFNULL(SUM(used_point), 0) AS get_point
+      FROM tb_point_history
+    WHERE tb_user_id = 1
+      AND point_gubun = 'get') AS a,
+      (SELECT IFNULL(SUM(used_point), 0) AS used_point
+      FROM tb_point_history 
+    WHERE tb_user_id = 1
+      AND point_gubun = 'used') AS b;
+
+    -- 적립 예정 포인트(어떻게 구하는지 모르겠다)
+
+    -- 당원 소멸 예정 포인트(어떻게 구하는지 모르겠다)
+
+    -- 포인트 사용 내역(use_type 필드만 가지고 표현이 가능한지..?)
+    ```
   security:
     - bearerAuth: [ ]
   responses:

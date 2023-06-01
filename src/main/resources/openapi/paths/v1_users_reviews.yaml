@@ -2,7 +2,26 @@ get:
   tags:
     - 마이-리뷰(43p)
   summary: 내 리뷰 목록
-  description: 44p 마이-리뷰
+  description: |
+    44p 마이-리뷰<br>
+    ```
+    -- 내가 쓴 리뷰
+    SELECT
+      a.id AS review_id,
+      b.name,
+      a.content,
+      a.grade,
+      a.keyword,
+      DATE_FORMAT(a.register_time , '%Y.%m.%d')
+    FROM
+      tb_review a, tb_place b
+    WHERE a.tb_place_id = b.id
+      and a.tb_user_id = :tb_user_id
+    ORDER by a.register_time DESC
+    LIMIT 5 OFFSET 0;
+    -- 내가 쓴 리뷰 이미지 목록
+    -- tb_file과 tb_review의 연관 관계를 모르겠다.
+    ```
   security:
     - bearerAuth: [ ]
   parameters:

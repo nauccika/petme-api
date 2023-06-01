@@ -5,16 +5,35 @@ get:
   description: |
     62p 메인-팻 연구소 콘텐츠 목록
     ```
+    SET @input_referer = "https://statuesque-entremet-5ef58c.netlify.app/";
     SELECT 
-      a.id AS content_id, 
-      a.category,
-      a.title,
-      a.hashtag,
-      CONCAT('http://', b.ip1, c.full_path, '/', c.save_name) AS image_url
-      FROM tb_pet_raboratory a, tb_server b, tb_file c
-    WHERE c.tb_pet_raboratory_id = a.id
-    ORDER BY a.register_time DESC
-    LIMIT 0, 4; -- page, size
+      RAB.category,
+      RAB.title,
+      RAB.hashtag, 
+      IF (RAB.id NOT IN(SELECT b.id FROM tb_file a, tb_pet_raboratory b WHERE b.id = a.tb_pet_raboratory_id), '', 
+        (SELECT 
+          IF (STRCMP(@input_referer, 'https://statuesque-entremet-5ef58c.netlify.app/') = 0, 
+            CONCAT('api', full_path, '/', save_name), 
+            CONCAT('http://', 
+                (SELECT DISTINCT a.ip1 FROM tb_server a, tb_file b 
+                    WHERE a.id = b.tb_server_id AND b.tb_pet_raboratory_id = RAB.id), full_path, '/',  '/', save_name))
+        FROM tb_file
+        WHERE   tb_pet_raboratory_id = RAB.id AND gubun = 'image|펫연구소-메인')) AS main_image_url,
+      IF (RAB.id NOT IN(SELECT b.id FROM tb_file a, tb_pet_raboratory b WHERE b.id = a.tb_pet_raboratory_id), '', 
+        (SELECT 
+          CONCAT('http://', 
+              (SELECT DISTINCT a.ip1 FROM tb_server a, tb_file b 
+                  WHERE a.id = b.tb_server_id AND b.tb_pet_raboratory_id = RAB.id), full_path,  '/', save_name)
+        FROM
+          tb_file
+        WHERE 
+          tb_pet_raboratory_id = RAB.id AND gubun = 'image|펫연구소-상세')) AS sub_image_url
+    FROM 
+      tb_pet_raboratory AS RAB,
+      tb_file AS FILE
+    WHERE 
+      RAB.id = FILE.tb_pet_raboratory_id
+    GROUP BY RAB.title;
     ```
   parameters:
     - name: page
@@ -40,15 +59,15 @@ get:
               type: object
               description: 랭킹
               properties:
-                content_id:
-                  $ref: '../schemas/contentId.yaml'
                 category:
                   $ref: '../schemas/category.yaml'
                 title:
                   $ref: '../schemas/title.yaml'
                 hashtag:
                   $ref: '../schemas/hashtag.yaml'
-                image_url:
+                main_image_url:
+                  $ref: '../schemas/imageUrl.yaml'
+                sub_image_url:
                   $ref: '../schemas/imageUrl.yaml'
     default:
       description: Error

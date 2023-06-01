@@ -5,39 +5,60 @@ get:
   description: |
     62p 메인-추천 목록
     ```
-      SELECT
-          X.place_id,
-          X.ranking,
-          X.total_review_count,
-          X.distance,
-          X.place_name,
-          X.sido,
-          X.image_url
+    -- http://101.101.208.77/api/v1/site_suggestion.php?business_gubun=동물병원&street_name_address=내 주변&longitude=127.027528&latitude=37.497637
+    -- SET @input_referer = "$checkReferer";  -- netlify 처리
+    -- SET @input_business_gubun = "동물병원";
+    -- SET @input_street_name_address = "서울 강남구%";
+    -- SET @input_longitude = 127.027528;
+    -- SET @input_latitude = 37.497637;
+    -- SET @input_limit = 10;   -- 펫미가 추천해요 항목은 10개
+    -- SET @input_offset = 0;   -- limit와 offset에는 사용자 지정변수가 들어갈 수가 없다. 참고만 하라.
+    SET @input_referer = "$checkReferer";
+    SET @input_business_gubun = '$req_business_gubun';  
+    SET @input_street_name_address = '$req_street_name_address%';
+    SET @input_longitude = $req_longitude;
+    SET @input_latitude = $req_latitude;
+
+    SELECT 
+      -- X.total_count,
+      X.id,
+      X.ranking,
+      X.total_review_count,
+      X.street_name_address,
+      X.distance,
+      X.place_name,
+      X.image_url
+    FROM (
+      SELECT 
+        COUNT(*) OVER() AS total_count,
+        PLACE.id, 
+        (TRIM(PLACE.ranking) + 0) AS ranking, 
+        (IFNULL(PLACE.blog_review_count, 0) + IFNULL(PLACE.visitor_review_count, 0)) AS total_review_count, 
+        PLACE.street_name_address,
+        @rest_meter := ROUND(ST_Distance_Sphere(POINT(PLACE.longitude, PLACE.latitude), POINT(@input_longitude, @input_latitude))) AS dummy, 
+        IF (@rest_meter > 1000, CONCAT(CONVERT(ROUND(@rest_meter/1000, 1), CHAR), 'km'), 
+          CONCAT(CONVERT(@rest_meter, CHAR), 'm')) AS distance, 
+        TRIM(PLACE.NAME) AS place_name, 
+        IF (PLACE.id NOT IN(SELECT b.id FROM tb_file a, tb_place b WHERE b.id = a.tb_place_id), '', 
+          (SELECT 
+          IF (STRCMP(@input_referer, 'https://statuesque-entremet-5ef58c.netlify.app/') = 0, 
+            CONCAT('api', full_path, '/', save_name), 
+            CONCAT('http://', 
+                (SELECT DISTINCT a.ip1 FROM tb_server a, tb_file b 
+                    WHERE a.id = b.tb_server_id AND b.tb_pet_raboratory_id = PLACE.id), full_path, '/', save_name))
+          FROM
+            tb_file
+          WHERE
+            tb_place_id = PLACE.id AND gubun = 'image|장소-메인')) AS image_url 
       FROM
-      (
-        SELECT       
-            a.id AS place_id,
-            SUBSTRING_INDEX(a.street_name_address, ' ', 2) AS sido,
-            (TRIM(a.ranking) + 0) AS ranking,
-            (IFNULL(a.blog_review_count, 0) + IFNULL(a.visitor_review_count, 0)) AS total_review_count,
-            @rest_meter := ROUND(ST_Distance_Sphere(POINT(a.longitude, a.latitude), POINT(@input_longitude, @input_latitude))) AS rest_meter,
-            IF (@rest_meter > 1000, CONCAT(CONVERT(ROUND(@rest_meter/1000, 1), CHAR), 'km'), CONCAT(CONVERT(@rest_meter, CHAR), 'm')) AS distance,
-            TRIM(a.NAME) AS place_name, 
-            if (a.id NOT IN(SELECT bb.id FROM tb_file aa, tb_place bb WHERE bb.id = aa.tb_place_id), '',
-              (SELECT 
-                  CONCAT('http://', (SELECT z.ip1 FROM tb_server z, tb_file y WHERE z.id = y.tb_server_id AND y.tb_place_id = a.id), full_path, '/', save_name) 
-              FROM tb_file WHERE tb_place_id = a.id)) AS image_url
-        FROM 
-            tb_place AS a,
-            (SELECT @rownum := 0) AS b,
-            (SELECT @rest_meter := 0) AS c,
-            (SELECT @input_longitude := 127.027528) AS d,
-            (SELECT @input_latitude := 37.497637) AS e
-        WHERE 
-            -- (a.business_gubun = '동물병원' AND a.street_name_address like '서울 강남구%') OR 
-            ST_Distance_Sphere(POINT(a.longitude, a.latitude), POINT(@input_longitude, @input_latitude)) <= 2000
-        ORDER BY rest_meter ASC, ranking DESC
-      ) X LIMIT 4 OFFSET 0;
+        tb_place AS PLACE
+      WHERE
+        IF (STRCMP(@input_street_name_address, '내 주변%') = 0, 
+          PLACE.business_gubun = @input_business_gubun, 
+          PLACE.business_gubun = @input_business_gubun AND PLACE.street_name_address LIKE @input_street_name_address)
+        AND ST_Distance_Sphere(POINT(PLACE.longitude, PLACE.latitude), POINT(@input_longitude, @input_latitude)) between 10 AND 5000
+      ORDER BY ranking DESC
+    ) AS X LIMIT 10 OFFSET 0;  
     ```
   parameters:
     - name: business_gubun

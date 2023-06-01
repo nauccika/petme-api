@@ -8,15 +8,16 @@ get:
     28p 내정보 조회<br>
     receive_information_yn 필드는 설정 > 알림 설정에 사용한다<br>
     ```
+    -- :tb_user_id 는 인증 토큰에서 참조한다.
     SELECT 
       user_name, 
       email, 
-      current_point, 
+      current_point,
       receive_information_yn,
       (SELECT count(1) FROM tb_review WHERE tb_user_id = 39) AS review_count,
       (SELECT count(1) FROM tb_watchlist WHERE tb_user_id = 39) AS watch_count
     FROM tb_user
-    WHERE id = 39;
+    WHERE id = :tb_user_id;
     ```
   responses:
     "200":

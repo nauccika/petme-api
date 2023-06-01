@@ -58,6 +58,8 @@ get:
                   $ref: '../schemas/content.yaml'
                 place_name:
                   $ref: '../schemas/placeName.yaml'
+                keyword:
+                  $ref: '../schemas/keyword.yaml'
                 image_urls:
                   type: array
                   items:

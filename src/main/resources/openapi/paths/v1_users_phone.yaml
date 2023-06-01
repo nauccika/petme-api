@@ -8,14 +8,15 @@ put:
     -- code 검증
       SELECT otp
         FROM tb_otp
-        WHERE phone = '01012341234'
-          AND otp = '123456'
+        WHERE phone = :phone
+          AND otp = :otp
           AND expiration_time > NOW();
           
     -- 휴대폰번호 갱신
+    -- :tb_user_id는 인증 토큰에서 참조
     UPDATE tb_user
-       SET phone = '01012341234'
-     WHERE id = 10;
+       SET phone = :phone
+     WHERE id = :tb_user_id;
     ```
   security:
     - bearerAuth: [ ]

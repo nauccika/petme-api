@@ -8,7 +8,7 @@ post:
     ```
     -- 로그아웃 이력
     INSERT INTO tb_user_login_history(tb_user_id, login_id, login_time, login_ip, access_status)
-    VALUES(39, 'petme@petme.kr', now(), NULL, '로그아웃');
+    VALUES(:tb_user_id, :login_id, now(), NULL, '로그아웃');
     ```
   security:
     - bearerAuth: [ ]

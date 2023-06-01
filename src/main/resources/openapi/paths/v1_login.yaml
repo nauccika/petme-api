@@ -10,17 +10,17 @@ post:
     -- 로그인
     SELECT id, login_id, user_name, email  
       FROM tb_user 
-    WHERE login_id = 'petme@petme.kr' 
-      AND password = SHA2('password', 256);
+    WHERE login_id = :login_id 
+      AND password = SHA2(:password, 256);
     
     -- 로그인 이력
     INSERT INTO tb_user_login_history(tb_user_id, login_id, login_time, login_ip, access_status)
-    VALUES(39, 'petme@petme.kr', now(), NULL, '접속중');
+    VALUES(:tb_user_id, :login_id, now(), NULL, '접속중');
 
     -- 디바이스 정보 수정
     UPDATE tb_device
-      SET tb_user_id=39, login_id='petme@petme.kr', modify_time=now()
-    WHERE uuid='941780cc-5a53-4455-9cf7-835ff2bbbe1a';
+      SET tb_user_id=:tb_user_id, login_id=:login_id, modify_time=now()
+    WHERE uuid=:uuid;
     ```
   requestBody:
     required: true

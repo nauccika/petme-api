@@ -113,8 +113,8 @@ paths:
   /v1/places/{place_id}: #장소 상세
     $ref: './paths/v1_places_place_id.yaml'
 
-  /v1/pet-contents/{content_id}: #팻미 연구소 콘텐츠 상세
-    $ref: './paths/v1_pet_contents_content_id.yaml'
+  # /v1/pet-contents/{content_id}: #팻미 연구소 콘텐츠 상세
+    # $ref: './paths/v1_pet_contents_content_id.yaml'
 
   # /v1/contents: #메인-검색
     # $ref: './paths/v1_contents.yaml'
