@@ -2,7 +2,31 @@ get:
   tags:
     - 마이-찜(50p)
   summary: 마이찜-콘텐츠
-  description: 52p 마이-찜-콘텐츠
+  description: |
+    52p 마이-찜-콘텐츠.<br>
+    사용자 정보는 인증 토큰을 참조.<br>
+    펫미 Q&A 쿼리에 tb_watchlist 조인하여 tb_user_id로 검색.<br>
+    ```
+    -- 펫미 콘텐츠는 반드시 이미지가 존재해야 한다.
+    SELECT 
+      r.category,
+      r.title title,
+      r.hashtag,
+      DATE_FORMAT(r.register_time , '%Y.%m.%d') AS register_time,
+      (SELECT CONCAT('http://', full_path, '/', save_name)
+        FROM tb_server s, tb_file f
+          WHERE s.id = f.tb_server_id 
+            AND f.tb_pet_raboratory_id = r.id
+            AND f.gubun = 'image|펫연구소-메인') AS main_imgate_url,
+        (SELECT CONCAT('http://', full_path, '/', save_name)
+        FROM tb_server s, tb_file f
+          WHERE s.id = f.tb_server_id 
+            AND f.tb_pet_raboratory_id = r.id
+            AND f.gubun = 'image|펫연구소-상세') AS su_imgate_url
+    FROM tb_pet_raboratory r, tb_watchlist w, tb_user u
+    WHERE w.tb_pet_raboratory_id = r.id
+      AND w.tb_user_id = :tb_user_id;
+    ```
   security:
     - bearerAuth: [ ]
   parameters:
@@ -28,14 +52,16 @@ get:
             items:
               type: object
               properties:
-                raboratory_id:
-                  $ref: '../schemas/raboratoryId.yaml'
                 category:
                   $ref: '../schemas/category.yaml'
                 title:
                   $ref: '../schemas/title.yaml'
                 hashtag:
                   $ref: '../schemas/hashtag.yaml'
+                main_image_url:
+                  $ref: '../schemas/imageUrl.yaml'
+                sub_image_url:
+                  $ref: '../schemas/imageUrl.yaml'
     default:
       description: Error
       content:

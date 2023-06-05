@@ -3,11 +3,12 @@ put:
     - 마이-내정보수정(35p)
   summary: 내정보 수정-이름
   description: |
-    37p 닉네임 수정
+    37p 닉네임 수정.<br>
+    사용자 정보는 인증토큰을 참조한다.<br>
     ```
       UPDATE tb_user
          SET user_name = :user_name
-       WHERE id = 39;
+       WHERE id = :tb_user_id;
     ```
   security:
     - bearerAuth: [ ]

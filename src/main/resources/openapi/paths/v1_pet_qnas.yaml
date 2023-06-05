@@ -4,7 +4,8 @@ get:
   summary: 펫 연구소 Q&A 검색(작성중)
   description: |
     119p 팻 연구소 콘텐츠 목록<br>
-    검색어 대상 필드가 title? content?<br>
+    검색조건의 필드가 title 인지 content 인지 모르겠다<br>
+    파일과 연관관계 없음<br>
     ```
     SELECT id, category, title, content, writer, write_time,
        (SELECT count(1) FROM tb_petme_qna b WHERE parent_id = a.id) AS comment_count

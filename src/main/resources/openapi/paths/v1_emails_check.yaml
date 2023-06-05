@@ -1,10 +1,11 @@
 get:
-  summary: 이메일 중복 확인
+  summary: 이메일 중복 체크
   tags:
    - 로그인(9p)
   description: |
     13p 중복확인 클릭시 호출<br>
     응답이 200이면 중복, 204인 경우 정상<br>
+    쿼리 결과가 0이면 204, 쿼리 결과가 0보다 크면 200을 리턴한다.<br>
     ```
     SELECT COUNT(1)
       FROM tb_user

@@ -2,7 +2,25 @@ get:
   tags:
     - 펫연구소 작성글/댓글(53p)
   summary: 펫 연구소 Q&A 댓글
-  description: 55p 마이-펫연구소 작성 댓글
+  description: |
+    55p 마이-펫연구소 작성 댓글.<br>
+    ```
+    -- 작성한 글
+    SELECT category, title, content, writer, write_time,
+      (SELECT count(1) FROM tb_petme_qna WHERE a.id = parent_id AND `depth` = 1) comment_count
+      FROM tb_petme_qna a
+     WHERE tb_user_id = :tb_user_id
+       AND a.parent_id != 0
+       AND a.`depth` = 1;
+
+    -- 파일 목록
+    SELECT CONCAT('http://', full_path, '/', save_name) image_url
+      FROM tb_file a, tb_server b, tb_review c
+     WHERE a.tb_server_id = b.id
+      AND a.tb_petme_qna_id = c.id
+      AND a.tb_user_id = :tb_user_id
+      AND a.tb_petme_qna_id = :tb_petme_qna_id;
+    ```
   security:
     - bearerAuth: [ ]
   parameters:

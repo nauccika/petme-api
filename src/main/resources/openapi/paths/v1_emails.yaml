@@ -3,7 +3,8 @@ get:
   tags:
     - 이메일주소 찾기/비밀번호 찾기(14p)
   description: |
-    기획서 15p 이메일주소 찾기 클릭시
+    기획서 15p 이메일주소 찾기 클릭시.<br>
+    otp 인증 필요함.<br>
     ```
       -- otp 검증
       SELECT otp

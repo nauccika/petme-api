@@ -12,23 +12,39 @@ paths:
         - 로그인(9p)
       description: |
         12p 로그인 버튼 클릭시 호출.<br>
-        sns 로그인의 경우 sns가 돌려준 사용자 식별자를 prefix + login_id, access_token을 password로 넘긴다.<br>
-        예) login_id: kakao_2787125117, password: xjfRbePXz0jujIv9pQufV0YBFpGYpSl0xtYjVq-ZCj10aQAAAYgPJzRP
+        sns 로그인의 경우 sns가 sns식별자 + login_id, access_token을 password로 넘긴다.<br>
+        예) login_id: kakao_2787125117, password: xjfRbePXz0jujIv9pQufV0YBFpGYpSl0xtYjVq-ZCj10aQAAAYgPJzRP<br>
+        uuid는 native app에서 ui로 전달한다<br>
+        단말기 uuid 참고 정보: https://developer.android.com/training/articles/user-data-ids?hl=kohttps://www.hooni.net/xe/study/2273<
         ```
+        -- 사용자 테스트
+        INSERT INTO tb_user (login_id, email, password, phone, receive_information_yn)
+        VALUES ('ilovecorea@gmal.com', 'ilovecorea@gmail.com', SHA2('1234', 256), '01033204796', 'y');
+
         -- 로그인
         SELECT id, login_id, user_name, email  
           FROM tb_user 
-        WHERE login_id = 'petme@petme.kr' 
-          AND password = SHA2('password', 256);
+        WHERE login_id = :login_id 
+          AND password = SHA2(:password, 256);
 
         -- 로그인 이력
         INSERT INTO tb_user_login_history(tb_user_id, login_id, login_time, login_ip, access_status)
-        VALUES(39, 'petme@petme.kr', now(), NULL, '접속중');
+        VALUES(:tb_user_id, :login_id, now(), NULL, '접속중');
+
+        -- 로그인 이력 테스트
+        INSERT INTO tb_user_login_history(tb_user_id, login_id, login_time, login_ip, access_status)
+        VALUES(8, 'ilovecorea@gmail.com', now(), NULL, '접속중');
+
+        -- 디바이스 정보 테스트
+        INSERT INTO tb_device
+        (tb_user_id, `uuid`, login_id, os, modify_time, register_time)
+        VALUES(8, '72330df0-b49e-4020-aab1-ef80b6670f23', 'ilovecorea@gmail.com', 'Android 4.4.2', now(), now());
 
         -- 디바이스 정보 수정
         UPDATE tb_device
-          SET tb_user_id=39, login_id='petme@petme.kr', modify_time=now()
-        WHERE uuid='941780cc-5a53-4455-9cf7-835ff2bbbe1a';
+          SET tb_user_id=:tb_user_id, login_id=:login_id, modify_time=now()
+        WHERE uuid=:uuid;
+
         ```
       requestBody:
         required: true
@@ -67,16 +83,17 @@ paths:
                 $ref: '#/components/schemas/error'
   /v1/emails/check:
     get:
-      summary: 이메일 중복 확인
+      summary: 이메일 중복 체크
       tags:
         - 로그인(9p)
       description: |
         13p 중복확인 클릭시 호출<br>
         응답이 200이면 중복, 204인 경우 정상<br>
+        쿼리 결과가 0이면 204, 쿼리 결과가 0보다 크면 200을 리턴한다.<br>
         ```
         SELECT COUNT(1)
           FROM tb_user
-         WHERE email = 'petme@petme.kr';
+         WHERE email = :email;
         ```
       parameters:
         - name: email
@@ -105,7 +122,7 @@ paths:
         ```
         -- 로그아웃 이력
         INSERT INTO tb_user_login_history(tb_user_id, login_id, login_time, login_ip, access_status)
-        VALUES(39, 'petme@petme.kr', now(), NULL, '로그아웃');
+        VALUES(:tb_user_id, :login_id, now(), NULL, '로그아웃');
         ```
       security:
         - bearerAuth: []
@@ -126,18 +143,20 @@ paths:
       tags:
         - 마이-메인(27p)
       description: |
-        28p 내정보 조회<br>
-        receive_information_yn 필드는 설정 > 알림 설정에 사용한다<br>
+        28p 내정보 조회.<br>
+        receive_information_yn 필드는 설정 > 알림 설정에 사용한다.<br>
+        <font color=red><b>사용자의 현제 포인트 정보를 어디서 가져오는지 알 수 없어 current_point 필드 추가함.</b></font><br>
         ```
+        -- :tb_user_id 는 인증 토큰에서 참조한다.
         SELECT 
           user_name, 
           email, 
-          current_point, 
+          current_point,
           receive_information_yn,
           (SELECT count(1) FROM tb_review WHERE tb_user_id = 39) AS review_count,
           (SELECT count(1) FROM tb_watchlist WHERE tb_user_id = 39) AS watch_count
         FROM tb_user
-        WHERE id = 39;
+        WHERE id = :tb_user_id;
         ```
       responses:
         '200':
@@ -171,18 +190,23 @@ paths:
       tags:
         - 로그인(9p)
       description: |
-        13p 회원 가입 요청<br>
-        sns 로그인을 통한 회원 가입은 어떻게 처리할 것인가?<br>
+        13p 회원 가입 요청.<br>
+        <font color=red><b>sns 회원 가입의 경우 휴대폰 번호를 수집할 수 없다.</b></font><br>
+        이메일 중복 체크가 필요(19p).<br>
         ```
           -- otp 검증
           SELECT otp
             FROM tb_otp
-           WHERE phone = '01012341234'
-             AND otp = '123456'
+           WHERE phone = :phone
+             AND otp = :otp
              AND expiration_time > NOW();
+          -- 이메일 체크
+          SELECT COUNT(1) 
+            FROM tb_user
+          WHERE email = :email;
           -- 회원가입
           INSERT INTO tb_user (login_id, email, password, phone, receive_information_yn)
-          VALUES ('test1@test.com', 'test1@test.com', SHA2('password', 256), '01012341234', 'y');
+          VALUES (:login_id, :email, SHA2(:password, 256), :phone, :receive_information_yn);
         ```
       requestBody:
         required: true
@@ -222,10 +246,11 @@ paths:
       tags:
         - 이메일주소 찾기/비밀번호 찾기(14p)
       description: |
-        휴대폰 인증을 위해 sms로 otp를 발송<br>
+        휴대폰 인증을 위해 sms로 otp를 발송.<br>
+        <font color=red><b>sms 발송 시스템 없음.</b></font>
         ```
           INSERT INTO tb_otp(phone, otp, register_time)
-          VALUES ('01012341234', '123456', NOW());
+          VALUES (:phone, :otp, NOW());
         ```
       requestBody:
         required: true
@@ -253,18 +278,19 @@ paths:
       tags:
         - 이메일주소 찾기/비밀번호 찾기(14p)
       description: |
-        기획서 15p 이메일주소 찾기 클릭시
+        기획서 15p 이메일주소 찾기 클릭시.<br>
+        otp 인증 필요함.<br>
         ```
           -- otp 검증
           SELECT otp
             FROM tb_otp
-           WHERE phone = '01012341234'
-             AND otp = '123456'
+           WHERE phone = :phone
+             AND otp = :otp
              AND expiration_time > NOW();
           -- email 조회
           SELECT email 
             FROM tb_user 
-           WHERE phone = '01012341234';
+           WHERE phone = :phone;
         ```
       parameters:
         - name: phone
@@ -303,13 +329,13 @@ paths:
       tags:
         - 이메일주소 찾기/비밀번호 찾기(14p)
       description: |
-        17p 비밀번호 찾기 클릭
+        17p 비밀번호 찾기 클릭.<br>
         ```
           -- otp 검증
           SELECT otp
             FROM tb_otp
-            WHERE phone = '01012341234'
-              AND otp = '123456'
+            WHERE phone = :phone
+              AND otp = :otp
               AND expiration_time > NOW();
         ```
       parameters:
@@ -348,8 +374,8 @@ paths:
         - 이메일주소 찾기/비밀번호 찾기(14p)
       summary: 비밀번호 재설정
       description: |
-        18p 확인 버튼 클릭<br>
-        17p 요청값인 phone과 응답으로 받은 code, password를 요청으로 전송한다.
+        18p 확인 버튼 클릭.<br>
+        17p 요청값인 phone과 응답으로 받은 code, password를 요청으로 전송한다.<br>
         ```
           -- code 검증
           SELECT otp
@@ -395,11 +421,12 @@ paths:
         - 마이-내정보수정(35p)
       summary: 내정보 수정-이름
       description: |
-        37p 닉네임 수정
+        37p 닉네임 수정.<br>
+        사용자 정보는 인증토큰을 참조한다.<br>
         ```
           UPDATE tb_user
-             SET user_name = '아소카'
-           WHERE id = 39;
+             SET user_name = :user_name
+           WHERE id = :tb_user_id;
         ```
       security:
         - bearerAuth: []
@@ -413,7 +440,7 @@ paths:
                 user_name:
                   $ref: '#/components/schemas/userName'
               required:
-                - userName
+                - user_name
       responses:
         '200':
           description: Ok
@@ -429,12 +456,13 @@ paths:
         - 마이-내정보수정(35p)
       summary: 내정보 수정-비밀번호 수정
       description: |
-        38p 비밀번호 변경
+        38p 비밀번호 변경.<br>
+        사용자 정보는 인증토큰을 참조한다.<br>
         ```
           UPDATE tb_user
-            SET password = SHA2('new-password', 256)
-          WHERE id = 39
-            AND password = SHA2('password', 256);
+            SET password = SHA2(:new_password, 256)
+          WHERE id = :tb_user_id
+            AND password = SHA2(:password, 256);
         ```
       security:
         - bearerAuth: []
@@ -466,19 +494,21 @@ paths:
         - 마이-내정보수정(35p)
       summary: 휴대폰번호 변경
       description: |
-        39p 내정보 수정-휴대폰번호
+        39p 내정보 수정-휴대폰번호.<br>
+        사용자 정보는 인증토큰을 참조한다.<br>
         ```
         -- code 검증
           SELECT otp
             FROM tb_otp
-            WHERE phone = '01012341234'
-              AND otp = '123456'
+            WHERE phone = :phone
+              AND otp = :otp
               AND expiration_time > NOW();
               
         -- 휴대폰번호 갱신
+        -- :tb_user_id는 인증 토큰에서 참조
         UPDATE tb_user
-           SET phone = '01012341234'
-         WHERE id = 10;
+           SET phone = :phone
+         WHERE id = :tb_user_id;
         ```
       security:
         - bearerAuth: []
@@ -510,12 +540,13 @@ paths:
         - 마이-설정(31p)
       summary: 내정보 설정
       description: |
-        32p 내정보 수정-알림
+        32p 내정보 수정-알림.<br>
+        사용자 정보는 인증토큰을 참조한다.<br>
         ```
         -- 알림 수정
         UPDATE tb_user
            SET receive_information_yn = 'n'
-         WHERE id = 10;
+         WHERE id = :tb_user_id;
         ```
       security:
         - bearerAuth: []
@@ -528,11 +559,44 @@ paths:
                 receive_information_yn:
                   $ref: '#/components/schemas/receiveInformationYn'
               required:
-                - phone
-                - otp
+                - receive_information_yn
       responses:
         '200':
           description: 성공
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+    get:
+      tags:
+        - 마이-설정(31p)
+      summary: 내정보-알림설정
+      description: |
+        32p 내정보 조회-알림<br>
+        버전정보는 DB에서 관리하지 않는다<br>
+        ```
+        -- 알림 수정
+        -- :tb_user_id는 인증 토큰에서 참조
+        SELECT receive_information_yn
+          FROM tb_user 
+         WHERE id = :tb_user_id;
+        ```
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  receive_information_yn:
+                    $ref: '#/components/schemas/receiveInformationYn'
+                required:
+                  - receive_information_yn
         default:
           description: Error
           content:
@@ -545,16 +609,17 @@ paths:
         - 마이-내정보수정(35p)
       summary: 회원 탈퇴
       description: |
-        41p 회원 탈퇴<br>
-        회원 탈퇴 처리 후 로그아웃 처리한다<br>
+        41p 회원 탈퇴.<br>
+        회원 탈퇴 처리 후 로그아웃 처리한다.<br>
+        사용자 정보 인증토큰 참조.<br>
         ```
         UPDATE tb_user 
            SET use_yn = 'n',
                withdrawal_date = now(),
-               withdrawal_cause = '리뷰가 도움이 되지 않아서',
+               withdrawal_cause = :withrawal_cause,
                receive_information_yn = 'n',
                modify_time = now()
-         WHERE id = 39;
+         WHERE id = :tb_user_id;
         ```
       security:
         - bearerAuth: []
@@ -580,7 +645,30 @@ paths:
       tags:
         - 마이-리뷰(43p)
       summary: 내 리뷰 목록
-      description: 44p 마이-리뷰
+      description: |
+        44p 마이-리뷰.<br>
+        <font color=red><b>tb_file에 tb_review_id 컬럼 추가함.</b></font><br>
+        ```
+        -- 내가 쓴 리뷰
+        SELECT 
+            r.id AS review_id, 
+            (TRIM(p.ranking) + 0) AS ranking,
+            TRIM(p.NAME) AS place_name,
+            DATE_FORMAT(r.register_time , '%Y.%m.%d') AS register_time,
+            r.keyword,
+            r.content
+          FROM tb_place AS p, tb_review AS r
+        WHERE p.id = r.tb_place_id
+          AND r.tb_user_id = 2
+        ORDER BY ranking DESC;
+
+        -- 내가 쓴 리뷰 이미지 목록
+        SELECT CONCAT('http://', full_path, '/', save_name) image_url
+          FROM tb_file a, tb_server b, tb_review c
+         WHERE a.tb_server_id = b.id
+           AND a.tb_review_id = c.id
+          AND a.tb_user_id = :tb_user_id;
+        ```
       security:
         - bearerAuth: []
       parameters:
@@ -608,8 +696,8 @@ paths:
                   properties:
                     review_id:
                       $ref: '#/components/schemas/reviewId'
-                    grade:
-                      $ref: '#/components/schemas/grade'
+                    ranking:
+                      $ref: '#/components/schemas/ranking'
                     place_name:
                       $ref: '#/components/schemas/placeNam'
                     register_time:
@@ -640,7 +728,20 @@ paths:
       tags:
         - 마이-리뷰(43p)
       summary: 리뷰 삭제
-      description: 44p 마이-리뷰 삭제
+      description: |
+        44p 마이-리뷰 삭제<br>
+        <font color=red><b>tb_file에 tb_review_id 컬럼 추가함.</b></font><br>
+        ```
+        -- 내가 쓴 리뷰 삭제
+        DELETE FROM tb_review 
+         WHERE id = :review_id
+           AND tb_user_id = :tb_user_id;
+
+        -- 내가 쓴 리뷰의 파일 삭제
+        DELETE FROM tb_file
+         WHERE tb_review_id = :tb_review_id
+           AND tb_user_id = tb_user_id; 
+        ```
       security:
         - bearerAuth: []
       parameters:
@@ -663,10 +764,31 @@ paths:
     get:
       tags:
         - 마이-포인트(46p)
-      summary: 포인트 사용 내역
-      description: 47p 마이-포인트
+      summary: 포인트 사용 내역(작성중)
+      description: |
+        47p 마이-포인트.<br>
+        <font color=red><b>포인트 관리 추가 테이블 필요함.</b></font><br>
+        <font color=red><b>포인트 이력과 장소 연결고리 없음.</b></font><br>
+        ```
+        -- 사용 가능한 포인트, 적립 예정 포인트, 당월 소멸 포인트
+        -- 포인트 적립/사용 내역 
+
+        ```
       security:
         - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          required: true
+          description: 페이지 번호
+          schema:
+            $ref: '#/components/schemas/page'
+        - name: size
+          in: query
+          required: true
+          description: 페이지 사이즈
+          schema:
+            $ref: '#/components/schemas/size'
       responses:
         '200':
           description: 성공
@@ -700,7 +822,48 @@ paths:
       tags:
         - 마이-찜(50p)
       summary: 마이찜-장소
-      description: 52p 마이-찜-장소
+      description: |
+        52p 마이-찜-장소.<br>
+        ranking 쿼리에 tb_watchlist 조인하여 tb_user_id로 검색.<br>
+        ```
+        SET @req_latitude = 37.49982439110407;
+        SET @req_longitude = 127.02794437971482;
+        SELECT 
+          X.id,
+          X.place_id, 
+          X.ranking,
+          X.total_review_count, 
+          X.street_name_address,
+          X.distance, 
+          X.place_name, 
+          X.image_url
+        FROM (
+          SELECT 
+            PLACE.id,
+            PLACE.id as place_id, 
+            (TRIM(PLACE.ranking) + 0) AS ranking, 
+            (IFNULL(PLACE.blog_review_count, 0) + IFNULL(PLACE.visitor_review_count, 0)) AS total_review_count, 
+            PLACE.street_name_address,
+            @rest_meter := ROUND(ST_Distance_Sphere(POINT(PLACE.longitude, PLACE.latitude), POINT(@req_longitude, @req_latitude))) AS dummy, 
+            IF (@rest_meter > 1000, CONCAT(CONVERT(ROUND(@rest_meter/1000, 1), CHAR), 'km'), 
+              CONCAT(CONVERT(@rest_meter, CHAR), 'm')) AS distance, 
+            TRIM(PLACE.NAME) AS place_name, 
+            IF (PLACE.id NOT IN(SELECT b.id FROM tb_file a, tb_place b WHERE b.id = a.tb_place_id), '', 
+              (SELECT original_name FROM tb_file 
+                WHERE tb_place_id = PLACE.id AND gubun = 'image|장소-업체사진' LIMIT 1)) AS image_url 
+          FROM
+            tb_place AS PLACE, tb_watchlist AS WATCH
+          WHERE
+            (PLACE.NAME REGEXP :req_business_gubun OR 
+            PLACE.hashtag REGEXP :req_business_gubun OR 
+            PLACE.business_gubun REGEXP :req_business_gubun AND 
+            PLACE.street_name_address LIKE '')  
+            AND ST_Distance_Sphere(POINT(PLACE.longitude, PLACE.latitude), POINT(@req_longitude, @req_latitude)) between 0 AND 5000
+            AND WATCH.tb_place_id = PLACE.id
+            AND WATCH.tb_user_id = :tb_user_id
+          ORDER BY ranking DESC
+        ) AS X;  
+        ```
       security:
         - bearerAuth: []
       parameters:
@@ -744,10 +907,8 @@ paths:
                       $ref: '#/components/schemas/openYn'
                     openTime:
                       $ref: '#/components/schemas/openTime'
-                    image_urls:
-                      type: array
-                      items:
-                        $ref: '#/components/schemas/imageUrl'
+                    image_url:
+                      $ref: '#/components/schemas/imageUrl'
         default:
           description: Error
           content:
@@ -759,7 +920,31 @@ paths:
       tags:
         - 마이-찜(50p)
       summary: 마이찜-콘텐츠
-      description: 52p 마이-찜-콘텐츠
+      description: |
+        52p 마이-찜-콘텐츠.<br>
+        사용자 정보는 인증 토큰을 참조.<br>
+        펫미 Q&A 쿼리에 tb_watchlist 조인하여 tb_user_id로 검색.<br>
+        ```
+        -- 펫미 콘텐츠는 반드시 이미지가 존재해야 한다.
+        SELECT 
+          r.category,
+          r.title title,
+          r.hashtag,
+          DATE_FORMAT(r.register_time , '%Y.%m.%d') AS register_time,
+          (SELECT CONCAT('http://', full_path, '/', save_name)
+            FROM tb_server s, tb_file f
+              WHERE s.id = f.tb_server_id 
+                AND f.tb_pet_raboratory_id = r.id
+                AND f.gubun = 'image|펫연구소-메인') AS main_imgate_url,
+            (SELECT CONCAT('http://', full_path, '/', save_name)
+            FROM tb_server s, tb_file f
+              WHERE s.id = f.tb_server_id 
+                AND f.tb_pet_raboratory_id = r.id
+                AND f.gubun = 'image|펫연구소-상세') AS su_imgate_url
+        FROM tb_pet_raboratory r, tb_watchlist w, tb_user u
+        WHERE w.tb_pet_raboratory_id = r.id
+          AND w.tb_user_id = :tb_user_id;
+        ```
       security:
         - bearerAuth: []
       parameters:
@@ -785,14 +970,16 @@ paths:
                 items:
                   type: object
                   properties:
-                    raboratory_id:
-                      $ref: '#/components/schemas/raboratoryId'
                     category:
                       $ref: '#/components/schemas/category'
                     title:
                       $ref: '#/components/schemas/title'
                     hashtag:
                       $ref: '#/components/schemas/hashtag'
+                    main_image_url:
+                      $ref: '#/components/schemas/imageUrl'
+                    sub_image_url:
+                      $ref: '#/components/schemas/imageUrl'
         default:
           description: Error
           content:
@@ -804,7 +991,31 @@ paths:
       tags:
         - 마이-찜(50p)
       summary: 마이찜-Q&A
-      description: 52p 마이-찜-펫 연구소 Q&A
+      description: |
+        52p 마이-찜-펫 연구소 Q&A<br>
+        펫미 Q&A 쿼리에 tb_watchlist 조인하여 tb_user_id로 검색.<br>
+        ```
+        -- 찜한 글
+        SELECT 
+          a.id AS qna_id, 
+          category, 
+          title, 
+          content, 
+          writer, 
+          DATE_FORMAT(a.write_time , '%Y.%m.%d') AS write_time,
+          (SELECT count(1) FROM tb_petme_qna WHERE a.id = parent_id AND `depth` = 1) comment_count
+          FROM tb_petme_qna a, tb_watchlist b
+         WHERE b.tb_user_id = :tb_user_id
+           AND b.tb_petme_qna_id = a.id
+           AND a.parent_id = 0;
+
+        -- 파일 목록
+        SELECT CONCAT('http://', full_path, '/', save_name) image_url
+          FROM tb_file a, tb_server b, tb_review c
+         WHERE a.tb_server_id = b.id
+          AND a.tb_petme_qna_id = c.id
+          AND a.tb_petme_qna_id = :tb_petme_qna_id;
+        ```
       security:
         - bearerAuth: []
       parameters:
@@ -836,14 +1047,18 @@ paths:
                       $ref: '#/components/schemas/category'
                     title:
                       $ref: '#/components/schemas/title'
+                    content:
+                      $ref: '#/components/schemas/content'
                     writer:
                       $ref: '#/components/schemas/writer'
-                    writer_name:
-                      $ref: '#/components/schemas/writerName'
-                    read_count:
-                      $ref: '#/components/schemas/readCount'
-                    register_time:
-                      $ref: '#/components/schemas/registerTime'
+                    comment_count:
+                      $ref: '#/components/schemas/commentCount'
+                    write_time:
+                      $ref: '#/components/schemas/writeTime'
+                    image_urls:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/imageUrl'
         default:
           description: Error
           content:
@@ -855,7 +1070,12 @@ paths:
       tags:
         - 마이-찜(50p)
       summary: 찜 삭제
-      description: 52p 마이-찜-삭제
+      description: |
+        52p 마이-찜-삭제.<br>
+        ```
+        DELETE FROM tb_watchlist
+        WHERE id = :watch_id;
+        ```
       security:
         - bearerAuth: []
       parameters:
@@ -879,7 +1099,25 @@ paths:
       tags:
         - 펫연구소 작성글/댓글(53p)
       summary: 펫 연구소 Q&A 작성글
-      description: 55p 마이-펫 연구소 작성글
+      description: |
+        55p 마이-펫 연구소 작성글.<br>
+        파일을 하나만 가져오는지 모두 가져오는지 판단되지 않아 파일 목록 쿼리 별도로 분리.<br>
+        ```
+        -- 작성한 글
+        SELECT category, title, content, writer, write_time,
+          (SELECT count(1) FROM tb_petme_qna WHERE a.id = parent_id AND `depth` = 1) comment_count
+          FROM tb_petme_qna a
+         WHERE tb_user_id = :tb_user_id
+           AND a.parent_id = 0;
+
+        -- 파일 목록
+        SELECT CONCAT('http://', full_path, '/', save_name) image_url
+          FROM tb_file a, tb_server b, tb_review c
+         WHERE a.tb_server_id = b.id
+          AND a.tb_petme_qna_id = c.id
+          AND a.tb_user_id = :tb_user_id
+          AND a.tb_petme_qna_id = :tb_petme_qna_id;
+        ```
       security:
         - bearerAuth: []
       parameters:
@@ -935,7 +1173,25 @@ paths:
       tags:
         - 펫연구소 작성글/댓글(53p)
       summary: 펫 연구소 Q&A 댓글
-      description: 55p 마이-펫연구소 작성 댓글
+      description: |
+        55p 마이-펫연구소 작성 댓글.<br>
+        ```
+        -- 작성한 글
+        SELECT category, title, content, writer, write_time,
+          (SELECT count(1) FROM tb_petme_qna WHERE a.id = parent_id AND `depth` = 1) comment_count
+          FROM tb_petme_qna a
+         WHERE tb_user_id = :tb_user_id
+           AND a.parent_id != 0
+           AND a.`depth` = 1;
+
+        -- 파일 목록
+        SELECT CONCAT('http://', full_path, '/', save_name) image_url
+          FROM tb_file a, tb_server b, tb_review c
+         WHERE a.tb_server_id = b.id
+          AND a.tb_petme_qna_id = c.id
+          AND a.tb_user_id = :tb_user_id
+          AND a.tb_petme_qna_id = :tb_petme_qna_id;
+        ```
       security:
         - bearerAuth: []
       parameters:
@@ -980,13 +1236,25 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
-  /v1/users/news:
+  /v1/users/notice:
     get:
       tags:
         - 마이-이벤트/공지사항(56p)
       summary: 마이-이벤트/공지사항
       description: |
-        57p 마이-이벤트/공지사항<br> 응답 필드 미정
+        57p 마이-이벤트/공지사항<br> <font color=red><b>페이징이 있는건지 없는건지 모르겠다.</b></font><br> ``` SELECT 
+          n.id,
+          n.title,
+          n.notice_gubun,
+          DATE_FORMAT(n.register_time , '%Y.%m.%d') AS register_time,
+          (SELECT CONCAT('http://', full_path, '/', save_name)
+            FROM tb_server s, tb_file f
+              WHERE s.id = f.tb_server_id 
+                AND f.tb_petme_notice_id = n.id
+                AND f.gubun = 'image|공지-메인') AS imgate_url
+        FROM tb_petme_notice n, tb_mapping_tb_user_tb_petme_notice un WHERE n.id = un.tb_petme_notice_id
+          AND un.tb_user_id = :tb_user_id;
+        ```
       security:
         - bearerAuth: []
       parameters:
@@ -1012,10 +1280,13 @@ paths:
                 items:
                   type: object
                   properties:
-                    eventId:
-                      $ref: '#/components/schemas/eventId'
+                    notice_id:
+                      $ref: '#/components/schemas/noticeId'
                     title:
                       $ref: '#/components/schemas/title'
+                    notice_gubun:
+                      type: string
+                      description: 공지사항 타입
                     register_time:
                       $ref: '#/components/schemas/registerTime'
                     image_url:
@@ -1078,7 +1349,24 @@ paths:
       tags:
         - 마이-이벤트/공지사항(56p)
       summary: 공지
-      description: 59p 공지 상세
+      description: |
+        59p 공지 상세.<br>
+        <font color=red><b>tb_file의 gubun은 참고할 데이터가 없어 임의로 작성했다.</b></font><br>
+        ```
+        SELECT 
+          n.id,
+          n.title,
+          n.notice_gubun,
+          DATE_FORMAT(n.register_time , '%Y.%m.%d') AS register_time,
+          (SELECT CONCAT('http://', full_path, '/', save_name)
+            FROM tb_server s, tb_file f
+              WHERE s.id = f.tb_server_id 
+                AND f.tb_petme_notice_id = n.id
+                AND f.gubun = 'image|공지-메인') AS imgate_url
+        FROM tb_petme_notice n, tb_mapping_tb_user_tb_petme_notice un
+        WHERE n.id = un.tb_petme_notice_id
+          AND un.tb_user_id = :tb_user_id
+        ```
       security:
         - bearerAuth: []
       parameters:
@@ -1413,50 +1701,7 @@ paths:
       tags:
         - 통합메인(61p)
       summary: 메인-베스트 리뷰 목록
-      description: |
-        62p 베스트 리뷰
-        ```
-        CREATE TEMPORARY TABLE IF NOT EXISTS tb_temp_target_place AS (
-          SELECT 
-            PLACE.id, 
-            (TRIM(PLACE.ranking) + 0) AS ranking, 
-            (IFNULL(PLACE.blog_review_count, 0) + IFNULL(PLACE.visitor_review_count, 0)) AS total_review_count, 
-            @rest_meter := ROUND(ST_Distance_Sphere(POINT(PLACE.longitude, PLACE.latitude), POINT(127.027528, 37.497637))) AS dummy, 
-            IF (@rest_meter > 1000, CONCAT(CONVERT(ROUND(@rest_meter/1000, 1), CHAR), 'km'), 
-              CONCAT(CONVERT(@rest_meter, CHAR), 'm')) AS distance, 
-            TRIM(PLACE.NAME) AS place_name, 
-            IF (PLACE.id NOT IN(SELECT b.id FROM tb_file a, tb_place b WHERE b.id = a.tb_place_id), '', 
-              (SELECT 
-                CONCAT('http://', 
-                  (SELECT DISTINCT a.ip1 FROM tb_server a, tb_file b 
-                    WHERE a.id = b.tb_server_id AND b.tb_place_id = PLACE.id), full_path, '/', save_name)
-              FROM
-                tb_file
-              WHERE 
-                tb_place_id = PLACE.id AND gubun = 'image|리뷰-메인')) AS image_url
-          FROM 
-            tb_place AS PLACE
-          WHERE 
-            (PLACE.business_gubun = '동물병원' AND PLACE.street_name_address LIKE '서울 강남구%') OR 
-            ST_Distance_Sphere(POINT(PLACE.longitude, PLACE.latitude), POINT(127.027528, 37.497637)) <= 5000
-          ORDER BY ranking DESC
-        );
-
-        SELECT * FROM tb_temp_target_place;
-        SELECT 
-          b.ranking, b.place_name, a.writer, a.visit_date, a.content, b.image_url
-        --   (   SELECT FROM tb_file WHERE tb_place_id = PLACE.id AND gubun = 'image|리뷰-메인'   ) AS image_url
-        FROM 
-          tb_review a, tb_temp_target_place b 
-        WHERE 
-          a.tb_place_id = b.id
-        --   a.tb_place_id = b.id AND b.id = 4
-        GROUP BY b.place_name
-        ORDER BY a.register_time ASC;
-        -- LIMIT 1;
-          
-        DROP TEMPORARY TABLE tb_temp_target_place;
-        ```
+      description: "62p 베스트 리뷰\n```\nCREATE TEMPORARY TABLE IF NOT EXISTS tb_temp_target_place AS (\n  SELECT \n    PLACE.id, \n    (TRIM(PLACE.ranking) + 0) AS ranking, \n    (IFNULL(PLACE.blog_review_count, 0) + IFNULL(PLACE.visitor_review_count, 0)) AS total_review_count, \n    @rest_meter := ROUND(ST_Distance_Sphere(POINT(PLACE.longitude, PLACE.latitude), POINT($req_longitude, $req_latitude))) AS dummy, \n    IF (@rest_meter > 1000, CONCAT(CONVERT(ROUND(@rest_meter/1000, 1), CHAR), 'km'), \n      CONCAT(CONVERT(@rest_meter, CHAR), 'm')) AS distance, \n    TRIM(PLACE.NAME) AS place_name, \n    IF (PLACE.id NOT IN(SELECT b.id FROM tb_file a, tb_place b WHERE b.id = a.tb_place_id), '', \n      (SELECT \n        CONCAT('http://', \n          (SELECT DISTINCT a.ip1 FROM tb_server a, tb_file b \n            WHERE a.id = b.tb_server_id AND b.tb_place_id = PLACE.id), full_path, '/', save_name)\n      FROM\n        tb_file\n      WHERE \n        tb_place_id = PLACE.id AND gubun = 'image|리뷰-메인')) AS image_url\n  FROM \n    tb_place AS PLACE\n  WHERE \n    $query_param\n  ORDER BY ranking DESC\n);\n\n-- SELECT * FROM tb_temp_target_place;\nSELECT \n  b.ranking, b.place_name, a.writer, a.visit_date, a.content, b.image_url\n--\t(\tSELECT FROM tb_file WHERE tb_place_id = PLACE.id AND gubun = 'image|리뷰-메인'\t) AS image_url\nFROM \n  tb_review a, tb_temp_target_place b \nWHERE \n  a.tb_place_id = b.id\nGROUP BY b.place_name\nORDER BY a.register_time ASC;\nLIMIT 5 OFFSET 0;\n  \nDROP TEMPORARY TABLE tb_temp_target_place;  \n```\n"
       parameters:
         - name: business_gubun
           in: query
@@ -1586,39 +1831,60 @@ paths:
       description: |
         62p 메인-추천 목록
         ```
-          SELECT
-              X.place_id,
-              X.ranking,
-              X.total_review_count,
-              X.distance,
-              X.place_name,
-              X.sido,
-              X.image_url
+        -- http://101.101.208.77/api/v1/site_suggestion.php?business_gubun=동물병원&street_name_address=내 주변&longitude=127.027528&latitude=37.497637
+        -- SET @input_referer = "$checkReferer";  -- netlify 처리
+        -- SET @input_business_gubun = "동물병원";
+        -- SET @input_street_name_address = "서울 강남구%";
+        -- SET @input_longitude = 127.027528;
+        -- SET @input_latitude = 37.497637;
+        -- SET @input_limit = 10;   -- 펫미가 추천해요 항목은 10개
+        -- SET @input_offset = 0;   -- limit와 offset에는 사용자 지정변수가 들어갈 수가 없다. 참고만 하라.
+        SET @input_referer = "$checkReferer";
+        SET @input_business_gubun = '$req_business_gubun';  
+        SET @input_street_name_address = '$req_street_name_address%';
+        SET @input_longitude = $req_longitude;
+        SET @input_latitude = $req_latitude;
+
+        SELECT 
+          -- X.total_count,
+          X.id,
+          X.ranking,
+          X.total_review_count,
+          X.street_name_address,
+          X.distance,
+          X.place_name,
+          X.image_url
+        FROM (
+          SELECT 
+            COUNT(*) OVER() AS total_count,
+            PLACE.id, 
+            (TRIM(PLACE.ranking) + 0) AS ranking, 
+            (IFNULL(PLACE.blog_review_count, 0) + IFNULL(PLACE.visitor_review_count, 0)) AS total_review_count, 
+            PLACE.street_name_address,
+            @rest_meter := ROUND(ST_Distance_Sphere(POINT(PLACE.longitude, PLACE.latitude), POINT(@input_longitude, @input_latitude))) AS dummy, 
+            IF (@rest_meter > 1000, CONCAT(CONVERT(ROUND(@rest_meter/1000, 1), CHAR), 'km'), 
+              CONCAT(CONVERT(@rest_meter, CHAR), 'm')) AS distance, 
+            TRIM(PLACE.NAME) AS place_name, 
+            IF (PLACE.id NOT IN(SELECT b.id FROM tb_file a, tb_place b WHERE b.id = a.tb_place_id), '', 
+              (SELECT 
+              IF (STRCMP(@input_referer, 'https://statuesque-entremet-5ef58c.netlify.app/') = 0, 
+                CONCAT('api', full_path, '/', save_name), 
+                CONCAT('http://', 
+                    (SELECT DISTINCT a.ip1 FROM tb_server a, tb_file b 
+                        WHERE a.id = b.tb_server_id AND b.tb_pet_raboratory_id = PLACE.id), full_path, '/', save_name))
+              FROM
+                tb_file
+              WHERE
+                tb_place_id = PLACE.id AND gubun = 'image|장소-메인')) AS image_url 
           FROM
-          (
-            SELECT       
-                a.id AS place_id,
-                SUBSTRING_INDEX(a.street_name_address, ' ', 2) AS sido,
-                (TRIM(a.ranking) + 0) AS ranking,
-                (IFNULL(a.blog_review_count, 0) + IFNULL(a.visitor_review_count, 0)) AS total_review_count,
-                @rest_meter := ROUND(ST_Distance_Sphere(POINT(a.longitude, a.latitude), POINT(@input_longitude, @input_latitude))) AS rest_meter,
-                IF (@rest_meter > 1000, CONCAT(CONVERT(ROUND(@rest_meter/1000, 1), CHAR), 'km'), CONCAT(CONVERT(@rest_meter, CHAR), 'm')) AS distance,
-                TRIM(a.NAME) AS place_name, 
-                if (a.id NOT IN(SELECT bb.id FROM tb_file aa, tb_place bb WHERE bb.id = aa.tb_place_id), '',
-                  (SELECT 
-                      CONCAT('http://', (SELECT z.ip1 FROM tb_server z, tb_file y WHERE z.id = y.tb_server_id AND y.tb_place_id = a.id), full_path, '/', save_name) 
-                  FROM tb_file WHERE tb_place_id = a.id)) AS image_url
-            FROM 
-                tb_place AS a,
-                (SELECT @rownum := 0) AS b,
-                (SELECT @rest_meter := 0) AS c,
-                (SELECT @input_longitude := 127.027528) AS d,
-                (SELECT @input_latitude := 37.497637) AS e
-            WHERE 
-                -- (a.business_gubun = '동물병원' AND a.street_name_address like '서울 강남구%') OR 
-                ST_Distance_Sphere(POINT(a.longitude, a.latitude), POINT(@input_longitude, @input_latitude)) <= 2000
-            ORDER BY rest_meter ASC, ranking DESC
-          ) X LIMIT 4 OFFSET 0;
+            tb_place AS PLACE
+          WHERE
+            IF (STRCMP(@input_street_name_address, '내 주변%') = 0, 
+              PLACE.business_gubun = @input_business_gubun, 
+              PLACE.business_gubun = @input_business_gubun AND PLACE.street_name_address LIKE @input_street_name_address)
+            AND ST_Distance_Sphere(POINT(PLACE.longitude, PLACE.latitude), POINT(@input_longitude, @input_latitude)) between 10 AND 5000
+          ORDER BY ranking DESC
+        ) AS X LIMIT 10 OFFSET 0;  
         ```
       parameters:
         - name: business_gubun
@@ -1700,7 +1966,8 @@ paths:
         - 통합메인(61p)
       summary: 펫 연구소 콘텐트 목록
       description: |
-        62p 메인-팻 연구소 콘텐츠 목록
+        62p 메인-팻 연구소 콘텐츠 목록<br>
+        페이징 없음<br>
         ```
         SET @input_referer = "https://statuesque-entremet-5ef58c.netlify.app/";
         SELECT 
@@ -1779,7 +2046,8 @@ paths:
       summary: 펫 연구소 Q&A 검색(작성중)
       description: |
         119p 팻 연구소 콘텐츠 목록<br>
-        검색어 대상 필드가 title? content?<br>
+        검색조건의 필드가 title 인지 content 인지 모르겠다<br>
+        파일과 연관관계 없음<br>
         ```
         SELECT id, category, title, content, writer, write_time,
            (SELECT count(1) FROM tb_petme_qna b WHERE parent_id = a.id) AS comment_count
@@ -1841,9 +2109,16 @@ paths:
         tb_file에 tb_petme_qna_id 참조가 없다.<br>
         ```
         -- qan 추가
-          INSERT INTO tb_petme_qna
-          (tb_user_id, category, title, content, writer, write_time, read_count, parent_id, `order`, `depth`, use_yn, modify_time, register_time)
-          VALUES(39, '사료 | 간식', '8월 포메가 심장이 크데요...', '8월 포메가 심장이 크데요...', '루피', now(), 0, 0, 0, 0, 'y', now(), now());
+        :tb_user_id는 인증 토큰에서 참조한다.
+        :writer는 tb_user_id를 통해 구한다.
+        INSERT INTO tb_petme_qna
+        (tb_user_id, category, title, content, writer, write_time, read_count, parent_id, `order`, `depth`, use_yn, modify_time, register_time)
+        VALUES(:tb_user_id, :category, :title, :content, :writer, now(), 0, 0, 0, 0, 'y', now(), now());
+        -- 파일 추가
+        tb_qna_id 컬럼을 tb_file 테이블에 추가해야 한다.
+        INSERT INTO petme3.tb_file
+        (tb_server_id, tb_user_id, tb_qna_id, original_name, save_name, full_path, `size`, width, height, `depth`, hash_type, hash, mimetype, gubun, source, main_image_yn, exposure_order, encoding, use_yn, modify_time, register_time)
+        VALUES(:tb_server_id, :tb_user_id, :tb_qna_id, :original_name, :save_name, :full_path, :size, :width, :height, :depth, :hash_type, :hash, :mimetype, :gubun, :source, 'n', :exposure_order, :encoding, 'y', now(), now());
         ```
       requestBody:
         content:
@@ -1923,9 +2198,16 @@ paths:
         128p Q&A 댓글 작성<br>
         tb_file 테이블에 tb_petme_qna_id 필드가 없다.<br>
         ```
+        -- 댓글 추가
         INSERT INTO tb_petme_qna
         (tb_user_id, content, writer, write_time, read_count, parent_id, `order`, `depth`, use_yn, modify_time, register_time)
-        VALUES(39, '8월 포메가 심장이 크데요...', '아소카', now(), 0, 3, 1, 1, 'y', now(), now());
+        VALUES(:tb_user_id, :content, :writer, now(), :read_count, :parent_id, :order, :depth, 'y', now(), now());
+        -- 파일 추가
+        tb_qna_id 컬럼을 tb_file 테이블에 추가해야 한다.
+        INSERT INTO petme3.tb_file
+        (tb_server_id, tb_user_id, tb_qna_id, original_name, save_name, full_path, `size`, width, height, `depth`, hash_type, hash, mimetype, gubun, source, main_image_yn, exposure_order, encoding, use_yn, modify_time, register_time)
+        VALUES(:tb_server_id, :tb_user_id, :tb_qna_id, :original_name, :save_name, :full_path, :size, :width, :height, :depth, :hash_type, :hash, :mimetype, :gubun, :source, 'n', :exposure_order, :encoding, 'y', now(), now());
+
         ```
       parameters:
         - name: qna_id
@@ -2104,6 +2386,195 @@ paths:
                       $ref: '#/components/schemas/lotNumberAddress'
                     way_to_come1:
                       $ref: '#/components/schemas/wayToCome1'
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  /v1/contents/counts:
+    get:
+      tags:
+        - 메인-검색(65p)
+      summary: 메인-검색 카운트
+      description: |
+        65p 메인-검색 결과 카운트.<br>
+        <font color=red><b>검색 결과의 카운트와 장소, 콘텐츠, Q&A의 목록 API를 별도로 분리한다.</b></font><br>
+        ```
+        -- 검색 결과 카운트 쿼리
+        SELECT 
+          '장소' AS gubun,
+          p.business_gubun AS gubun1, 
+          COUNT(1) AS cnt
+        FROM tb_place p
+        WHERE p.name LIKE '%:keyword%'
+        GROUP BY p.business_gubun
+        UNION ALL
+        SELECT 
+          '콘텐츠' AS gubun,
+          '' AS gubun1,
+          COUNT(1) AS cnt
+        FROM tb_pet_raboratory r
+        WHERE r.title LIKE '%:keyword%'
+        UNION ALL 
+        SELECT 
+          'Q&A' AS gubun,
+          '' AS gubun1,
+          COUNT(1) AS cnt
+        FROM tb_petme_qna q
+        WHERE q.title LIKE '%:keyword%';
+        ```
+      parameters:
+        - name: keyword
+          in: query
+          description: 검색어
+          required: true
+          schema:
+            $ref: '#/components/schemas/keyword'
+        - name: latitude
+          in: query
+          required: true
+          description: 위도 좌표
+          schema:
+            $ref: '#/components/schemas/latitude'
+        - name: longitude
+          in: query
+          required: true
+          description: 경도 좌표
+          schema:
+            $ref: '#/components/schemas/longitude'
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/paths/~1v1~1contents/get/responses/200/content/application~1json/schema/allOf/0'
+                  - $ref: '#/paths/~1v1~1contents/get/responses/200/content/application~1json/schema/allOf/1'
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  /v1/contents:
+    get:
+      tags:
+        - 메인-검색(65p)
+      summary: 메인-검색
+      description: |
+        65p 메인-검색<br>
+        ```
+        -- 장소 검색
+        set @req_latitude = :latitude;
+        set @req_longitude = :longitude;
+        SELECT 
+          X.total_count,
+          X.id, 
+          X.place_id, 
+          X.ranking,
+          X.total_review_count, 
+          X.street_name_address,
+          X.distance, 
+          X.place_name, 
+          X.image_url
+        FROM (
+          SELECT 
+            PLACE.id AS id,
+            COUNT(*) OVER() AS total_count,
+            PLACE.id as place_id, 
+            (TRIM(PLACE.ranking) + 0) AS ranking, 
+            (IFNULL(PLACE.blog_review_count, 0) + IFNULL(PLACE.visitor_review_count, 0)) AS total_review_count, 
+            PLACE.street_name_address,
+            @rest_meter := ROUND(ST_Distance_Sphere(POINT(PLACE.longitude, PLACE.latitude), POINT(@req_longitude, @req_latitude))) AS dummy, 
+            IF (@rest_meter > 1000, CONCAT(CONVERT(ROUND(@rest_meter/1000, 1), CHAR), 'km'), 
+              CONCAT(CONVERT(@rest_meter, CHAR), 'm')) AS distance, 
+            TRIM(PLACE.NAME) AS place_name, 
+            IF (PLACE.id NOT IN(SELECT b.id FROM tb_file a, tb_place b WHERE b.id = a.tb_place_id), '', 
+              (SELECT original_name FROM tb_file 
+                WHERE tb_place_id = PLACE.id AND gubun = 'image|장소-업체사진' LIMIT 1)) AS image_url 
+          FROM
+            tb_place AS PLACE
+          WHERE
+            (PLACE.NAME REGEXP :gubun OR 
+            PLACE.hashtag REGEXP :gubun OR 
+            PLACE.business_gubun REGEXP :_gubun)  
+            AND PLACE.name like '%:keyword%'
+            AND ST_Distance_Sphere(POINT(PLACE.longitude, PLACE.latitude), POINT(@req_longitude, @req_latitude)) between 0 AND 5000
+          ORDER BY ranking DESC
+        ) AS X LIMIT 4 OFFSET 0;  
+
+        -- 펫연구소 콘텐츠 검색
+          기존 쿼리에서 :gubun 파라미터를 category 에 대입하여 검색
+
+        -- 펫연구소 Q&A 검색
+          기존 쿼리에서 :gubun 파라미터를 category 에 대입하여 검색
+        ```
+      parameters:
+        - name: keyword
+          in: query
+          description: 검색어
+          required: true
+          schema:
+            $ref: '#/components/schemas/keyword'
+        - name: latitude
+          in: query
+          required: true
+          description: 위도 좌표
+          schema:
+            $ref: '#/components/schemas/latitude'
+        - name: longitude
+          in: query
+          required: true
+          description: 경도 좌표
+          schema:
+            $ref: '#/components/schemas/longitude'
+        - name: gubun
+          in: query
+          required: true
+          $ref: '#/components/schemas/businessGubun'
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - type: array
+                    items:
+                      type: object
+                      properties:
+                        business_gubun:
+                          $ref: '#/components/schemas/businessGubun'
+                        total_count:
+                          $ref: '#/components/schemas/totalCount'
+                        place_id:
+                          $ref: '#/components/schemas/placeId'
+                        place_name:
+                          $ref: '#/components/schemas/placeNam'
+                        ranking:
+                          $ref: '#/components/schemas/ranking'
+                        total_review_count:
+                          $ref: '#/components/schemas/totalReviewCount'
+                        distance:
+                          $ref: '#/components/schemas/distance'
+                        image_url:
+                          $ref: '#/components/schemas/imageUrl'
+                  - type: array
+                    items:
+                      type: object
+                      properties:
+                        content_id: null
+                        $ref: '#/components/schemas/contentId'
+                      category:
+                        $ref: '#/components/schemas/category'
+                      title:
+                        $ref: '#/components/schemas/title'
+                      hashtag:
+                        $ref: '#/components/schemas/hashtag'
+                      image_url:
+                        $ref: '#/components/schemas/imageUrl'
         default:
           description: Error
           content:
@@ -2311,6 +2782,8 @@ components:
     noticeId:
       type: integer
       description: 공지 아이디
+    notice_gubun:
+      $ref: '#/components/schemas/noticeGubun'
     openStatus:
       type: string
       description: 영업 구분

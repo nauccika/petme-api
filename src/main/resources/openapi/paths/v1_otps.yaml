@@ -3,7 +3,8 @@ post:
   tags:
     - 이메일주소 찾기/비밀번호 찾기(14p)
   description: |
-    휴대폰 인증을 위해 sms로 otp를 발송<br>
+    휴대폰 인증을 위해 sms로 otp를 발송.<br>
+    <font color=red><b>sms 발송 시스템 없음.</b></font>
     ```
       INSERT INTO tb_otp(phone, otp, register_time)
       VALUES (:phone, :otp, NOW());

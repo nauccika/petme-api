@@ -2,7 +2,12 @@ delete:
   tags:
     - 마이-찜(50p)
   summary: 찜 삭제
-  description: 52p 마이-찜-삭제
+  description: |
+    52p 마이-찜-삭제.<br>
+    ```
+    DELETE FROM tb_watchlist
+    WHERE id = :watch_id;
+    ```
   security:
     - bearerAuth: [ ]
   parameters:

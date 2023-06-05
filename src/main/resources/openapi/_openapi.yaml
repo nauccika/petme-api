@@ -26,9 +26,6 @@ paths:
   /v1/passwords: #비밀번호 찾기, 재설정
     $ref: './paths/v1_passwords.yaml'
 
-  # /v1/terms: #약관 목록 조회
-    # $ref: './paths/v1_terms.yaml'
-
   /v1/users/name: #내정보 수정-이름
     $ref: './paths/v1_users_name.yaml'
 
@@ -71,8 +68,8 @@ paths:
   /v1/users/qnas/comments: #내가 작성한 Q&A 댓글
     $ref: './paths/v1_users_qnas_comments.yaml'
 
-  /v1/users/news: #내 이벤트 목록
-    $ref: './paths/v1_users_news.yaml'
+  /v1/users/notice: #내 이벤트/소식/공지 목록
+    $ref: './paths/v1_users_notice.yaml'
 
   /v1/events/{event_id}: #이벤트 상세
     $ref: './paths/v1_events_eventId.yaml'
@@ -116,8 +113,11 @@ paths:
   # /v1/pet-contents/{content_id}: #팻미 연구소 콘텐츠 상세
     # $ref: './paths/v1_pet_contents_content_id.yaml'
 
-  # /v1/contents: #메인-검색
-    # $ref: './paths/v1_contents.yaml'
+  /v1/contents/counts: #메인-검색
+    $ref: './paths/v1_contents_counts.yaml'
+  
+  /v1/contents:
+    $ref: './paths/v1_contents.yaml'
 
   # /v1/reviews/{review_id}:
     # $ref: './paths/v1_reviews_reviewId.yaml'

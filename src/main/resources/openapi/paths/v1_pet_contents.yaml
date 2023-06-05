@@ -3,7 +3,8 @@ get:
     - 통합메인(61p)
   summary: 펫 연구소 콘텐트 목록
   description: |
-    62p 메인-팻 연구소 콘텐츠 목록
+    62p 메인-팻 연구소 콘텐츠 목록<br>
+    페이징 없음<br>
     ```
     SET @input_referer = "https://statuesque-entremet-5ef58c.netlify.app/";
     SELECT 

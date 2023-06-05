@@ -3,24 +3,28 @@ get:
     - 마이-리뷰(43p)
   summary: 내 리뷰 목록
   description: |
-    44p 마이-리뷰<br>
+    44p 마이-리뷰.<br>
+    <font color=red><b>tb_file에 tb_review_id 컬럼 추가함.</b></font><br>
     ```
     -- 내가 쓴 리뷰
-    SELECT
-      a.id AS review_id,
-      b.name,
-      a.content,
-      a.grade,
-      a.keyword,
-      DATE_FORMAT(a.register_time , '%Y.%m.%d')
-    FROM
-      tb_review a, tb_place b
-    WHERE a.tb_place_id = b.id
-      and a.tb_user_id = :tb_user_id
-    ORDER by a.register_time DESC
-    LIMIT 5 OFFSET 0;
+    SELECT 
+        r.id AS review_id, 
+        (TRIM(p.ranking) + 0) AS ranking,
+        TRIM(p.NAME) AS place_name,
+        DATE_FORMAT(r.register_time , '%Y.%m.%d') AS register_time,
+        r.keyword,
+        r.content
+      FROM tb_place AS p, tb_review AS r
+    WHERE p.id = r.tb_place_id
+      AND r.tb_user_id = 2
+    ORDER BY ranking DESC;
+    
     -- 내가 쓴 리뷰 이미지 목록
-    -- tb_file과 tb_review의 연관 관계를 모르겠다.
+    SELECT CONCAT('http://', full_path, '/', save_name) image_url
+      FROM tb_file a, tb_server b, tb_review c
+     WHERE a.tb_server_id = b.id
+       AND a.tb_review_id = c.id
+      AND a.tb_user_id = :tb_user_id;
     ```
   security:
     - bearerAuth: [ ]
@@ -49,8 +53,8 @@ get:
               properties:
                 review_id:
                   $ref: '../schemas/reviewId.yaml'
-                grade:
-                  $ref: '../schemas/grade.yaml'
+                ranking:
+                  $ref: '../schemas/ranking.yaml'
                 place_name:
                   $ref: '../schemas/placeName.yaml'
                 register_time:

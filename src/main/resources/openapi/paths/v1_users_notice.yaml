@@ -4,7 +4,22 @@ get:
   summary: 마이-이벤트/공지사항
   description: >
     57p 마이-이벤트/공지사항<br>
-    응답 필드 미정
+    <font color=red><b>페이징이 있는건지 없는건지 모르겠다.</b></font><br>
+    ```
+    SELECT 
+      n.id,
+      n.title,
+      n.notice_gubun,
+      DATE_FORMAT(n.register_time , '%Y.%m.%d') AS register_time,
+      (SELECT CONCAT('http://', full_path, '/', save_name)
+        FROM tb_server s, tb_file f
+          WHERE s.id = f.tb_server_id 
+            AND f.tb_petme_notice_id = n.id
+            AND f.gubun = 'image|공지-메인') AS imgate_url
+    FROM tb_petme_notice n, tb_mapping_tb_user_tb_petme_notice un
+    WHERE n.id = un.tb_petme_notice_id
+      AND un.tb_user_id = :tb_user_id;
+    ```
   security:
     - bearerAuth: [ ]
   parameters:
@@ -30,10 +45,12 @@ get:
             items:
               type: object
               properties:
-                eventId:
-                  $ref: '../schemas/eventId.yaml'
+                notice_id:
+                  $ref: '../schemas/noticeId.yaml'
                 title:
                   $ref: '../schemas/title.yaml'
+                notice_gubun:
+                  $ref: '../schemas/notice_gubun.yaml'
                 register_time:
                   $ref: '../schemas/registerTime.yaml'
                 image_url:

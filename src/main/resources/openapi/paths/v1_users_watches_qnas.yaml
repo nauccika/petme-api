@@ -2,7 +2,31 @@ get:
   tags:
     - 마이-찜(50p)
   summary: 마이찜-Q&A
-  description: 52p 마이-찜-펫 연구소 Q&A
+  description: |
+    52p 마이-찜-펫 연구소 Q&A<br>
+    펫미 Q&A 쿼리에 tb_watchlist 조인하여 tb_user_id로 검색.<br>
+    ```
+    -- 찜한 글
+    SELECT 
+      a.id AS qna_id, 
+      category, 
+      title, 
+      content, 
+      writer, 
+      DATE_FORMAT(a.write_time , '%Y.%m.%d') AS write_time,
+      (SELECT count(1) FROM tb_petme_qna WHERE a.id = parent_id AND `depth` = 1) comment_count
+      FROM tb_petme_qna a, tb_watchlist b
+     WHERE b.tb_user_id = :tb_user_id
+       AND b.tb_petme_qna_id = a.id
+       AND a.parent_id = 0;
+
+    -- 파일 목록
+    SELECT CONCAT('http://', full_path, '/', save_name) image_url
+      FROM tb_file a, tb_server b, tb_review c
+     WHERE a.tb_server_id = b.id
+      AND a.tb_petme_qna_id = c.id
+      AND a.tb_petme_qna_id = :tb_petme_qna_id;
+    ```
   security:
     - bearerAuth: [ ]
   parameters:
@@ -34,14 +58,18 @@ get:
                   $ref: '../schemas/category.yaml'
                 title:
                   $ref: '../schemas/title.yaml'
+                content:
+                  $ref: '../schemas/content.yaml'
                 writer:
                   $ref: '../schemas/writer.yaml'
-                writer_name:
-                  $ref: '../schemas/writerName.yaml'
-                read_count:
-                  $ref: '../schemas/readCount.yaml'
-                register_time:
-                  $ref: '../schemas/registerTime.yaml'
+                comment_count:
+                  $ref: '../schemas/commentCount.yaml'
+                write_time:
+                  $ref: '../schemas/writeTime.yaml'
+                image_urls:
+                  type: array
+                  items:
+                    $ref: '../schemas/imageUrl.yaml'
     default:
       description: Error
       content:

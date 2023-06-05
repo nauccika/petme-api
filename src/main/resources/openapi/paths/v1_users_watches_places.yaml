@@ -2,7 +2,48 @@ get:
   tags:
     - 마이-찜(50p)
   summary: 마이찜-장소
-  description: 52p 마이-찜-장소
+  description: |
+    52p 마이-찜-장소.<br>
+    ranking 쿼리에 tb_watchlist 조인하여 tb_user_id로 검색.<br>
+    ```
+    SET @req_latitude = 37.49982439110407;
+    SET @req_longitude = 127.02794437971482;
+    SELECT 
+      X.id,
+      X.place_id, 
+      X.ranking,
+      X.total_review_count, 
+      X.street_name_address,
+      X.distance, 
+      X.place_name, 
+      X.image_url
+    FROM (
+      SELECT 
+        PLACE.id,
+        PLACE.id as place_id, 
+        (TRIM(PLACE.ranking) + 0) AS ranking, 
+        (IFNULL(PLACE.blog_review_count, 0) + IFNULL(PLACE.visitor_review_count, 0)) AS total_review_count, 
+        PLACE.street_name_address,
+        @rest_meter := ROUND(ST_Distance_Sphere(POINT(PLACE.longitude, PLACE.latitude), POINT(@req_longitude, @req_latitude))) AS dummy, 
+        IF (@rest_meter > 1000, CONCAT(CONVERT(ROUND(@rest_meter/1000, 1), CHAR), 'km'), 
+          CONCAT(CONVERT(@rest_meter, CHAR), 'm')) AS distance, 
+        TRIM(PLACE.NAME) AS place_name, 
+        IF (PLACE.id NOT IN(SELECT b.id FROM tb_file a, tb_place b WHERE b.id = a.tb_place_id), '', 
+          (SELECT original_name FROM tb_file 
+            WHERE tb_place_id = PLACE.id AND gubun = 'image|장소-업체사진' LIMIT 1)) AS image_url 
+      FROM
+        tb_place AS PLACE, tb_watchlist AS WATCH
+      WHERE
+        (PLACE.NAME REGEXP :req_business_gubun OR 
+        PLACE.hashtag REGEXP :req_business_gubun OR 
+        PLACE.business_gubun REGEXP :req_business_gubun AND 
+        PLACE.street_name_address LIKE '')  
+        AND ST_Distance_Sphere(POINT(PLACE.longitude, PLACE.latitude), POINT(@req_longitude, @req_latitude)) between 0 AND 5000
+        AND WATCH.tb_place_id = PLACE.id
+        AND WATCH.tb_user_id = :tb_user_id
+      ORDER BY ranking DESC
+    ) AS X;  
+    ```
   security:
     - bearerAuth: [ ]
   parameters:
@@ -46,10 +87,8 @@ get:
                   $ref: '../schemas/openYn.yaml'
                 openTime:
                   $ref: '../schemas/openTime.yaml'
-                image_urls:
-                  type: array
-                  items:
-                    $ref: '../schemas/imageUrl.yaml'
+                image_url:
+                  $ref: '../schemas/imageUrl.yaml'
     default:
       description: Error
       content:

@@ -3,10 +3,10 @@ put:
     - 마이-설정(31p)
   summary: 내정보 설정
   description: |
-    32p 내정보 수정-알림
+    32p 내정보 수정-알림.<br>
+    사용자 정보는 인증토큰을 참조한다.<br>
     ```
     -- 알림 수정
-    -- :tb_user_id는 인증 토큰에서 참조
     UPDATE tb_user
        SET receive_information_yn = 'n'
      WHERE id = :tb_user_id;
@@ -22,11 +22,45 @@ put:
             receive_information_yn:
               $ref: '../schemas/receiveInformationYn.yaml'
           required:
-            - phone
-            - otp
+            - receive_information_yn
   responses:
     "200":
       description: 성공
+    default:
+      description: Error
+      content:
+        application/json:
+          schema:
+            $ref: '../schemas/error.yaml'
+get:
+  tags:
+    - 마이-설정(31p)
+  summary: 내정보-알림설정
+  description: |
+    32p 내정보 조회-알림<br>
+    버전정보는 DB에서 관리하지 않는다<br>
+    ```
+    -- 알림 수정
+    -- :tb_user_id는 인증 토큰에서 참조
+    SELECT receive_information_yn
+      FROM tb_user 
+     WHERE id = :tb_user_id;
+    ```
+  security:
+    - bearerAuth: [ ]
+  responses:
+    "200":
+      description: 성공
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              receive_information_yn:
+                $ref: '../schemas/receiveInformationYn.yaml'
+            required:
+              - receive_information_yn
+
     default:
       description: Error
       content:

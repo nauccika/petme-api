@@ -1,19 +1,21 @@
 delete:
   tags:
     - 마이-리뷰(43p)
-  summary: | 
-    리뷰 삭제<br>
+  summary: 리뷰 삭제
+  description: |
+    44p 마이-리뷰 삭제<br>
+    <font color=red><b>tb_file에 tb_review_id 컬럼 추가함.</b></font><br>
     ```
     -- 내가 쓴 리뷰 삭제
-    -- tb_user_id 조건이 필요한지 잘 모르겠다. 필요하다면 인증 토큰에서 참조한다.
     DELETE FROM tb_review 
      WHERE id = :review_id
-      -- AND tb_user_id = :tb_user_id;
+       AND tb_user_id = :tb_user_id;
 
     -- 내가 쓴 리뷰의 파일 삭제
-    -- tb_review와 tb_file의 연관관계를 모르겠다.
+    DELETE FROM tb_file
+     WHERE tb_review_id = :tb_review_id
+       AND tb_user_id = tb_user_id; 
     ```
-  description: 44p 마이-리뷰 삭제
   security:
     - bearerAuth: [ ]
   parameters:

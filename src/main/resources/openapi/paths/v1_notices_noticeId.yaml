@@ -2,7 +2,24 @@ get:
   tags:
     - 마이-이벤트/공지사항(56p)
   summary: 공지
-  description: 59p 공지 상세
+  description: | 
+    59p 공지 상세.<br>
+    <font color=red><b>tb_file의 gubun은 참고할 데이터가 없어 임의로 작성했다.</b></font><br>
+    ```
+    SELECT 
+      n.id,
+      n.title,
+      n.notice_gubun,
+      DATE_FORMAT(n.register_time , '%Y.%m.%d') AS register_time,
+      (SELECT CONCAT('http://', full_path, '/', save_name)
+        FROM tb_server s, tb_file f
+          WHERE s.id = f.tb_server_id 
+            AND f.tb_petme_notice_id = n.id
+            AND f.gubun = 'image|공지-메인') AS imgate_url
+    FROM tb_petme_notice n, tb_mapping_tb_user_tb_petme_notice un
+    WHERE n.id = un.tb_petme_notice_id
+      AND un.tb_user_id = :tb_user_id
+    ```
   security:
     - bearerAuth: [ ]
   parameters:

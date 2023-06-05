@@ -1,0 +1,66 @@
+get:
+  tags:
+    - 메인-검색(65p)
+  summary: 메인-검색 카운트
+  description: |
+    65p 메인-검색 결과 카운트.<br>
+    <font color=red><b>검색 결과의 카운트와 장소, 콘텐츠, Q&A의 목록 API를 별도로 분리한다.</b></font><br>
+    ```
+    -- 검색 결과 카운트 쿼리
+    SELECT 
+      '장소' AS gubun,
+      p.business_gubun AS gubun1, 
+      COUNT(1) AS cnt
+    FROM tb_place p
+    WHERE p.name LIKE '%:keyword%'
+    GROUP BY p.business_gubun
+    UNION ALL
+    SELECT 
+      '콘텐츠' AS gubun,
+      '' AS gubun1,
+      COUNT(1) AS cnt
+    FROM tb_pet_raboratory r
+    WHERE r.title LIKE '%:keyword%'
+    UNION ALL 
+    SELECT 
+      'Q&A' AS gubun,
+      '' AS gubun1,
+      COUNT(1) AS cnt
+    FROM tb_petme_qna q
+    WHERE q.title LIKE '%:keyword%';
+    ```
+  parameters:
+    - name: keyword
+      in: query
+      description: 검색어
+      required: true
+      schema:
+        $ref: '../schemas/keyword.yaml'
+    - name: latitude
+      in: query
+      required: true
+      description: 위도 좌표
+      schema:
+        $ref: '../schemas/latitude.yaml'
+    - name: longitude
+      in: query
+      required: true
+      description: 경도 좌표
+      schema:
+        $ref: '../schemas/longitude.yaml'
+  responses:
+    '200':
+      description: Ok
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: './comp_places.yaml'
+              - $ref: './comp_contents.yaml'
+    default:
+      description: Error
+      content:
+        application/json:
+          schema:
+            $ref: '../schemas/error.yaml'  
+  

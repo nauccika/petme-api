@@ -79,6 +79,8 @@ noticeGubun:
   $ref: ./noticeGubun.yaml
 noticeId:
   $ref: ./noticeId.yaml
+notice_gubun:
+  $ref: ./noticeGubun.yaml
 openStatus:
   $ref: ./openStatus.yaml
 openTime:

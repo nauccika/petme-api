@@ -3,7 +3,8 @@ put:
     - 마이-내정보수정(35p)
   summary: 휴대폰번호 변경
   description: |
-    39p 내정보 수정-휴대폰번호
+    39p 내정보 수정-휴대폰번호.<br>
+    사용자 정보는 인증토큰을 참조한다.<br>
     ```
     -- code 검증
       SELECT otp

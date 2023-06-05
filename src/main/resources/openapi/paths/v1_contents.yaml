@@ -1,9 +1,55 @@
 get:
   tags:
     - 메인-검색(65p)
-  summary: 메인-검색(작업중)
+  summary: 메인-검색
   description: |
-    65p 메인-검색
+    65p 메인-검색<br>
+    ```
+    -- 장소 검색
+    set @req_latitude = :latitude;
+    set @req_longitude = :longitude;
+    SELECT 
+      X.total_count,
+      X.id, 
+      X.place_id, 
+      X.ranking,
+      X.total_review_count, 
+      X.street_name_address,
+      X.distance, 
+      X.place_name, 
+      X.image_url
+    FROM (
+      SELECT 
+        PLACE.id AS id,
+        COUNT(*) OVER() AS total_count,
+        PLACE.id as place_id, 
+        (TRIM(PLACE.ranking) + 0) AS ranking, 
+        (IFNULL(PLACE.blog_review_count, 0) + IFNULL(PLACE.visitor_review_count, 0)) AS total_review_count, 
+        PLACE.street_name_address,
+        @rest_meter := ROUND(ST_Distance_Sphere(POINT(PLACE.longitude, PLACE.latitude), POINT(@req_longitude, @req_latitude))) AS dummy, 
+        IF (@rest_meter > 1000, CONCAT(CONVERT(ROUND(@rest_meter/1000, 1), CHAR), 'km'), 
+          CONCAT(CONVERT(@rest_meter, CHAR), 'm')) AS distance, 
+        TRIM(PLACE.NAME) AS place_name, 
+        IF (PLACE.id NOT IN(SELECT b.id FROM tb_file a, tb_place b WHERE b.id = a.tb_place_id), '', 
+          (SELECT original_name FROM tb_file 
+            WHERE tb_place_id = PLACE.id AND gubun = 'image|장소-업체사진' LIMIT 1)) AS image_url 
+      FROM
+        tb_place AS PLACE
+      WHERE
+        (PLACE.NAME REGEXP :gubun OR 
+        PLACE.hashtag REGEXP :gubun OR 
+        PLACE.business_gubun REGEXP :_gubun)  
+        AND PLACE.name like '%:keyword%'
+        AND ST_Distance_Sphere(POINT(PLACE.longitude, PLACE.latitude), POINT(@req_longitude, @req_latitude)) between 0 AND 5000
+      ORDER BY ranking DESC
+    ) AS X LIMIT 4 OFFSET 0;  
+
+    -- 펫연구소 콘텐츠 검색
+      기존 쿼리에서 :gubun 파라미터를 category 에 대입하여 검색
+
+    -- 펫연구소 Q&A 검색
+      기존 쿼리에서 :gubun 파라미터를 category 에 대입하여 검색
+    ```
   parameters:
     - name: keyword
       in: query
@@ -11,12 +57,22 @@ get:
       required: true
       schema:
         $ref: '../schemas/keyword.yaml'
-    - name: sido
+    - name: latitude
       in: query
-      description: 지역(시/도)
-      required: false
+      required: true
+      description: 위도 좌표
       schema:
-        $ref: '../schemas/sido.yaml'
+        $ref: '../schemas/latitude.yaml'
+    - name: longitude
+      in: query
+      required: true
+      description: 경도 좌표
+      schema:
+        $ref: '../schemas/longitude.yaml'
+    - name: gubun
+      in: query
+      required: true
+      $ref: '../schemas/businessGubun.yaml'
   responses:
     '200':
       description: Ok
